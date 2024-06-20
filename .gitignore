@@ -1,0 +1,3 @@
+# Ignorer le répertoire build/ et son contenu
+data/
+images/

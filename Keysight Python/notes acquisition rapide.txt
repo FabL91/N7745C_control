@@ -1,0 +1,19 @@
+dans ce dossier, j'ai déposé les programmes Python que j'utilise pour faire des acquisitions rapides 
+(mode continuous logging), j'ai discuté avec le support qui m'ont donné des conseils.
+
+à ce stade (20/07/22), ça n'est pas encore fonctionnel, on arrive à récupérer un très grand nombre de valeurs
+en une fois, mais il persiste une erreur "d'interprétation binaire" : le programme envoie ses données
+en binaire que la commande Python décode "toute seule" mais pas correctement; 
+
+j'essaye de mieux comprendre comment le décoder (avec quel nb de décimales, quel nb de bytes)
+
+il y a également les docs Keysight de programmation (quels commandes envoyer à l'appareil) et la notice
+d'utilisation pour le mode continuous logging (application note)
+
+programmes Python : 
+test logging.py : le mien que j'affine en fonction des retours de Keysight
+keysight logging.py : le leur avec les corrections qu'ils proposent
+logging values.json : les données récupérées lors d'une acquisition continue (dans test logging.py)
+
+https://pyvisa.readthedocs.io/en/1.12.0/introduction/rvalues.html#reading-binary-values
+https://www.keysight.com/fr/en/assets/9018-70054/programming-guides/9018-70054.pdf?success=true

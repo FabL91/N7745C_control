@@ -1,0 +1,2 @@
+cf : L:\Pyro\8d_Stage_Alternance G Cynober\programmes Python
+ouvrir pyro.py avec Spyder
