@@ -7,10 +7,13 @@ import time # start of Untitled
 
 
 rm=visa.ResourceManager()
+list_visa = rm.list_resources
+print(list_visa)
 N7745C=rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
+
 print(N7745C.query("*IDN?")) #The IDeNtification query 
 
-N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings
+#N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings
 N7745C.write(":SENSe2:CHANnel:FUNCtion:STATe LOGG,STOP") #Enables/Disables the logging, MinMax, or stability data acquisition function mode
 N7745C.write(":SENSe2:CHANnel:POWer:GAIN:AUTO 0") #Set the Auto Gain
 N7745C.write(":SENSe2:CHANnel:POWer:RANGe:AUTO 0") #Enables or disables automatic power ranging for the slot
