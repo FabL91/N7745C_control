@@ -23,7 +23,9 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize #,QObject
 from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction
 from PyQt5.QtGui import QIcon, QPixmap
 
-
+import matplotlib as plm
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
 
 
 
@@ -31,8 +33,13 @@ from PyQt5.QtGui import QIcon, QPixmap
 import application as app #this is where we send commands to measure the power
 import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
-from newpyro import Ui_Pyro #Interface file
-from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
+from newpyro_test import Ui_Pyro #Interface file
+#from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
+
+
+
+
+
 
 #Planck's constants
 c1 = 1.1908E-16#W*m2*str-1
@@ -44,8 +51,32 @@ calib_temp_b = -0.5804
 
 color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
       
-     
+ # Ensure using PyQt5 backend
+plm.use('QT5Agg')
+
+# Matplotlib canvas class to create figure
+class MplCanvas(Canvas):
+    def __init__(self):
+        self.fig = Figure(figsize=(11,6))
+        self.ax = self.fig.add_subplot(111)
+        Canvas.__init__(self, self.fig)
+        Canvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        Canvas.updateGeometry(self)
+
+# Matplotlib widget
+class MplWidget(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)   # Inherit from QWidget
+        self.canvas = MplCanvas()# Create canvas object
+        self.vbl = QtWidgets.QVBoxLayout()         # Set box for plotting
+        self.vbl.addWidget(self.canvas)
+        self.setLayout(self.vbl)    
     
+
+
+
+
+
 class Pyro(QtWidgets.QMainWindow):
     def __init__(self):
         super(Pyro, self).__init__() # Call the inherited classes __init__ method
@@ -53,6 +84,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui = Ui_Pyro()
         self.ui.setupUi(self)
         self.setWindowTitle("Pyro")        
+        
         #power meter adress
         self.ui.id_powermeter.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
         self.ui.id_powermeterS.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
@@ -113,10 +145,17 @@ class Pyro(QtWidgets.QMainWindow):
         self.toolstartQuit.setShortcut(Qt.CTRL + Qt.Key_Q) #CTRL + Q to Quit
         
         self.ui.checkBoxBounds.stateChanged.connect(self.boolBounds)#When we check / uncheck the box
+        self.ui.checkBoxBounds.setChecked(False)
         self.ui.checkBoxSigma.stateChanged.connect(self.boolSigma) #it connects to the functions below
-        self.bounds = False
-        self.sigma = False
-        
+        self.ui.checkBoxSigma.setChecked(False)
+
+        self.ui.check_simu.stateChanged.connect(self.boolSimu)
+        self.ui.check_simu.setChecked(True)
+
+    def boolSimu(self):
+        self.simu = self.ui.check_simu.isChecked()
+        print("Simuler?",self.simu)
+
     def boolBounds(self):
         self.bounds = self.ui.checkBoxBounds.isChecked()
         print("bounds?",self.bounds)
