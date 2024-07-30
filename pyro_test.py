@@ -92,7 +92,7 @@ class Pyro(QtWidgets.QMainWindow):
         #Preparing sample graphs
         self.plotWidgetUp = MplWidget(self.ui.widgetUp)
         self.plotWidgetDown = MplWidget(self.ui.widgetDown)
-        self.plotWidgetDown.canvas.ax.set_visible(False)
+        self.plotWidgetDown.canvas.ax.set_visible(True)
         self.gs = self.plotWidgetDown.canvas.fig.add_gridspec(2, hspace=0) #For continuous measures, emissivity and temp vs time
         self.plotWidgetDown.canvas.axs = self.gs.subplots(sharex=True)  
         self.plotWidgetDown.canvas.axs[0].set_xlabel("Time (s)")
