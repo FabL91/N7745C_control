@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1479</width>
-    <height>910</height>
+    <width>1415</width>
+    <height>971</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,14 +17,14 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>0</y>
-      <width>2000</width>
-      <height>995</height>
+      <x>20</x>
+      <y>10</y>
+      <width>1371</width>
+      <height>931</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Calibration">
      <property name="autoFillBackground">
@@ -42,6 +42,12 @@
         <height>431</height>
        </rect>
       </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(109,109,109);</string>
+      </property>
      </widget>
      <widget class="QLabel" name="labelgraphUp">
       <property name="geometry">
@@ -51,6 +57,12 @@
         <width>731</width>
         <height>401</height>
        </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>true</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(109, 109, 109);</string>
       </property>
       <property name="text">
        <string/>
@@ -311,7 +323,7 @@ color: rgb(255,255,255)</string>
         <rect>
          <x>40</x>
          <y>120</y>
-         <width>258</width>
+         <width>471</width>
          <height>252</height>
         </rect>
        </property>
@@ -479,9 +491,15 @@ color: rgb(255,255,255)</string>
        <rect>
         <x>760</x>
         <y>480</y>
-        <width>671</width>
+        <width>591</width>
         <height>391</height>
        </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(109,109,109);</string>
       </property>
      </widget>
      <widget class="QWidget" name="widgetUp" native="true">
@@ -489,9 +507,15 @@ color: rgb(255,255,255)</string>
        <rect>
         <x>760</x>
         <y>30</y>
-        <width>681</width>
+        <width>591</width>
         <height>431</height>
        </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(109,109,109);</string>
       </property>
      </widget>
      <widget class="QGroupBox" name="Val">

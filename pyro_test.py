@@ -20,12 +20,14 @@ import time
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtTest import QTest
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize #,QObject
-from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction
+from PyQt5.QtWidgets import QFileDialog, QWidget, QVBoxLayout, QToolBar, QAction, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
 
+from matplotlib import use
 import matplotlib as plm
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 
@@ -34,7 +36,7 @@ import application as app #this is where we send commands to measure the power
 import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
 from newpyro_test import Ui_Pyro #Interface file
-#from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
+from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
 
 
 
@@ -85,9 +87,18 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle("Pyro")        
         
-        #power meter adress
-        self.ui.id_powermeter.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
-        self.ui.id_powermeterS.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
+        self.ui.check_simu.stateChanged.connect(self.boolSimu)
+        self.ui.check_simu.setChecked(True)
+        
+        if self.simu == False:
+
+            #power meter adress
+            self.ui.id_powermeter.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
+            self.ui.id_powermeterS.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
+        
+        else:
+            self.ui.id_powermeter.addItem('Mode Simulation')
+            self.ui.id_powermeterS.addItem('Mode Simulation') 
         
         #Preparing sample graphs
         self.plotWidgetUp = MplWidget(self.ui.widgetUp)
@@ -149,9 +160,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.checkBoxSigma.stateChanged.connect(self.boolSigma) #it connects to the functions below
         self.ui.checkBoxSigma.setChecked(False)
 
-        self.ui.check_simu.stateChanged.connect(self.boolSimu)
-        self.ui.check_simu.setChecked(True)
-
+        
     def boolSimu(self):
         self.simu = self.ui.check_simu.isChecked()
         print("Simuler?",self.simu)
@@ -269,25 +278,31 @@ class Pyro(QtWidgets.QMainWindow):
     
     
     def connection(self):
-        """Connects to the instrument"""
-        self.rm = visa.ResourceManager() #visa connection
-        self.N7745C = self.rm.open_resource('TCPIP0::100.65.4.185::inst0::INSTR')
-        self.N7745C.timeout = 10000
-        self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
-        self.N7745C.write("*IDN?")#Query identification string *IDN?
-        print(self.N7745C.read())
-        if self.Errorcheck(self.N7745C) == []: #8 channels on the N7745C
+        if self.simu == False:
+            
+            """Connects to the instrument"""
+            self.rm = visa.ResourceManager() #visa connection
+            self.N7745C = self.rm.open_resource('TCPIP0::100.65.4.185::inst0::INSTR')
+            self.N7745C.timeout = 10000
+            self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
+            self.N7745C.write("*IDN?")#Query identification string *IDN?
+            print(self.N7745C.read())
+            if self.Errorcheck(self.N7745C) == []: #8 channels on the N7745C
+                self.val_run = True
+            
+                #Presets the N7745C and wait for operation complete via the *OPC?, i.e.
+                #the operation complete query.
+                self.N7745C.write("SYST:PRES;*OPC?")
+                print("Preset complete, *OPC? returned : " + self.N7745C.read())
+                    
+                self.N7745C.write(':configure:measurement:setting:preset')#Resets the settings            
+                self.N7745C.write(':sense:power:unit:all Watt')#Sets the sensor power unit of all channels to Watt
+                self.N7745C.write(':sense1:power:gain:auto 1')#auto gain
+                print('\n------------------------\n')
+
+        else:
+            print ("mode simulation")
             self.val_run = True
-        
-            #Presets the N7745C and wait for operation complete via the *OPC?, i.e.
-            #the operation complete query.
-            self.N7745C.write("SYST:PRES;*OPC?")
-            print("Preset complete, *OPC? returned : " + self.N7745C.read())
-                
-            self.N7745C.write(':configure:measurement:setting:preset')#Resets the settings            
-            self.N7745C.write(':sense:power:unit:all Watt')#Sets the sensor power unit of all channels to Watt
-            self.N7745C.write(':sense1:power:gain:auto 1')#auto gain
-            print('\n------------------------\n')
             
             
     def initiate(self):
@@ -299,24 +314,33 @@ class Pyro(QtWidgets.QMainWindow):
             #If the wavelength is twice the same, it could be a problem here
             if w <= 1.250:#N7745C only accept as a parameter wavelengths between 1250 and 1650nm
                 #Sets the sensor wavelength and its unit.
-                self.N7745C.write(f'sense{i+1}:power:wavelength {1.250}{wvUnit}')
-                print(f"set wavelength n°{i} to {w}{wvUnit}")
+                if self.simu == False:
+                    self.N7745C.write(f'sense{i+1}:power:wavelength {1.250}{wvUnit}')
+                else:
+                    print(f"set wavelength n°{i} to {w}{wvUnit}")
                 
             elif w >= 1.650:
                 #Sets the sensor wavelength and its unit.
-                self.N7745C.write(f'sense{i+1}:power:wavelength {1.650}{wvUnit}')
-                print(f"set wavelength n°{i} to {w}{wvUnit}")
+                if self.simu == False:
+                    self.N7745C.write(f'sense{i+1}:power:wavelength {1.650}{wvUnit}')
+                else:
+                    print(f"set wavelength n°{i} to {w}{wvUnit}")
                 
             else:       
                 #Sets the sensor wavelength and its unit.
-                self.N7745C.write(f'sense{i+1}:power:wavelength {w}{wvUnit}')
-                print(f"set wavelength n°{i} to {w}{wvUnit}")
+                if self.simu == False:
+                    self.N7745C.write(f'sense{i+1}:power:wavelength {w}{wvUnit}')
+                else:
+                    print(f"set wavelength n°{i} to {w}{wvUnit}")
                 
                 
     def setAveragingTime(self,avg):
         for i in range(len(avg)):#for each averaging time in the list
             a = avg[i]
-            self.N7745C.write(f"sense{i+1}:power:atime {a}ms") #in milliseconds
+            if self.simu == False:
+                self.N7745C.write(f"sense{i+1}:power:atime {a}ms") #in milliseconds
+            else:
+                print(f"sense{i+1}:power:atime {a}ms")
 
     """ End of instrument control functions"""  
          
