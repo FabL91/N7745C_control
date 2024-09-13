@@ -4,7 +4,7 @@ from scipy.stats import linregress
 #For the blackbody : these are the calibration temperatures 
 real_temperature = [691.2, 839.7, 988.0, 1185.3]
 displayed_temperature = [700.00, 850.01, 999.99, 1199.87]
-save_results_to = 'C:/Users/GC267267/Documents/Tesca3Donnees/' #The folder where data will be saved
+save_results_to = 'C:/Users/flepetit/Desktop/Keysight N7745C/N7745C_control/data/calib Test/' #The folder where data will be saved
 
 
 def fitTemperature(real_temperature = [691.2, 839.7, 988.0, 1185.3], displayed_temperature = [700.00, 850.01, 999.99, 1199.87]):
@@ -36,4 +36,7 @@ def fitTemperature(real_temperature = [691.2, 839.7, 988.0, 1185.3], displayed_t
     # Set labels
     plt.legend(loc='best')
     plt.savefig(save_results_to + 'temperature_calib.png', dpi=300)
+    plt.show
     return slope, intercept
+
+fitTemperature()

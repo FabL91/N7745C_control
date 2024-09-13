@@ -56,11 +56,11 @@ def nonlinearFit(wavelength, luminance, power, save_results_to, name="/power_lum
     plt.xlabel("Luminance [W.m-2.str-1.µm-1]")
     plt.ylabel("Power [W]")
     plt.tight_layout()
-    plt.savefig(save_results_to + name + '.png', dpi=300)
-    plt.show()
-    plt.clf()
-    plt.cla()
-    plt.close()
+    #plt.savefig(save_results_to + name + '.png', dpi=300)
+    #plt.show()
+    #plt.clf()
+    #plt.cla()
+    #plt.close()
     return slopeList, interceptList, curveList
 
 

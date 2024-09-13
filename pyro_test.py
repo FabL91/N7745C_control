@@ -24,9 +24,9 @@ from PyQt5.QtWidgets import QFileDialog, QWidget, QVBoxLayout, QToolBar, QAction
 from PyQt5.QtGui import QIcon, QPixmap
 
 from matplotlib import use
-import matplotlib as plm
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
@@ -36,7 +36,7 @@ import application as app #this is where we send commands to measure the power
 import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
 from newpyro_test import Ui_Pyro #Interface file
-from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
+#from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
 
 
 
@@ -54,16 +54,16 @@ calib_temp_b = -0.5804
 color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
       
  # Ensure using PyQt5 backend
-plm.use('QT5Agg')
+#plt.use('QT5Agg')
 
 # Matplotlib canvas class to create figure
-class MplCanvas(Canvas):
+class MplCanvas(FigureCanvas):
     def __init__(self):
-        self.fig = Figure(figsize=(11,6))
+        self.fig = Figure(figsize=(6,4))
         self.ax = self.fig.add_subplot(111)
-        Canvas.__init__(self, self.fig)
-        Canvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        Canvas.updateGeometry(self)
+        FigureCanvas.__init__(self, self.fig)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
 
 # Matplotlib widget
 class MplWidget(QtWidgets.QWidget):
@@ -86,9 +86,10 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui = Ui_Pyro()
         self.ui.setupUi(self)
         self.setWindowTitle("Pyro")        
-        
+        self.N7745C = None #à retirer si ce n'est plus en mode simulation
         self.ui.check_simu.stateChanged.connect(self.boolSimu)
-        self.ui.check_simu.setChecked(True)
+        self.ui.check_simu.setChecked(False)
+        self.simu = self.ui.check_simu.isChecked()
         
         if self.simu == False:
 
@@ -101,7 +102,8 @@ class Pyro(QtWidgets.QMainWindow):
             self.ui.id_powermeterS.addItem('Mode Simulation') 
         
         #Preparing sample graphs
-        self.plotWidgetUp = MplWidget(self.ui.widgetUp)
+        self.plotWidgetUp = MplWidget(self.ui.frameUp)
+        
         self.plotWidgetDown = MplWidget(self.ui.widgetDown)
         self.plotWidgetDown.canvas.ax.set_visible(True)
         self.gs = self.plotWidgetDown.canvas.fig.add_gridspec(2, hspace=0) #For continuous measures, emissivity and temp vs time
@@ -113,6 +115,7 @@ class Pyro(QtWidgets.QMainWindow):
         #Connecting buttons to their functions and hidding some that are not useful yet
         self.ui.startButton.clicked.connect(self.startCalib)
         self.ui.startButtonS.clicked.connect(self.startSample)
+        self.ui.ButtonStartOneFast.clicked.connect(self.FastOneAcquisition)
         self.ui.startContButtonS.clicked.connect(self.startContMode)
         self.ui.okButton.setHidden(True)
         self.ui.labelNbMeasure.setHidden(True)
@@ -160,6 +163,42 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.checkBoxSigma.stateChanged.connect(self.boolSigma) #it connects to the functions below
         self.ui.checkBoxSigma.setChecked(False)
 
+        #Graphique de visualisation de la calibration 10/09/2024
+        self.LumPower = self.ui.labelgraphUp
+
+        #Graphique de visualisation de l'acquisition rapide 13/09/2024
+        self.FastAcq = self.ui.GraphAcqFast
+
+        # Initialiser Matplotlib
+        self.init_matplotlib()
+
+    def init_matplotlib(self):
+        # Créer une figure Matplotlib
+        #Pour le graphique de la calibration
+
+        self.figure_LumPower = plt.figure(layout='tight')
+        self.canvas_LumPower = FigureCanvas(self.figure_LumPower)
+        toolbar_LumPower = NavigationToolbar(self.canvas_LumPower, self)
+    
+        # Ajouter le canevas au QFrame
+        graph_LumPower = QVBoxLayout()
+        graph_LumPower.addWidget(toolbar_LumPower)
+        graph_LumPower.addWidget(self.canvas_LumPower)
+        self.LumPower.setLayout(graph_LumPower)
+
+        #Pour le graphique de l'acquisition rapide
+
+        self.figure_FastAcq = plt.figure(layout='tight')
+        self.canvas_FastAcq = FigureCanvas(self.figure_FastAcq)
+        toolbar_FastAcq = NavigationToolbar(self.canvas_FastAcq, self)
+    
+        # Ajouter le canevas au QFrame de l'acquisition
+        graph_FastAcq = QVBoxLayout()
+        graph_FastAcq.addWidget(toolbar_FastAcq)
+        graph_FastAcq.addWidget(self.canvas_FastAcq)
+        self.FastAcq.setLayout(graph_FastAcq)
+                       
+              
         
     def boolSimu(self):
         self.simu = self.ui.check_simu.isChecked()
@@ -282,7 +321,7 @@ class Pyro(QtWidgets.QMainWindow):
             
             """Connects to the instrument"""
             self.rm = visa.ResourceManager() #visa connection
-            self.N7745C = self.rm.open_resource('TCPIP0::100.65.4.185::inst0::INSTR')
+            self.N7745C = self.rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
             self.N7745C.timeout = 10000
             self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
             self.N7745C.write("*IDN?")#Query identification string *IDN?
@@ -415,11 +454,12 @@ class Pyro(QtWidgets.QMainWindow):
 
     def calibMain(self):
         print("calibMain")
+        #self.N7745C = None #à retirer si ce n'est plus en mode simulation
         
-        self.returnedpower, self.returnedlum = app.calibration(
-            self.N7745C, self.temperatureListK, self.temperatureListK[self.index], 
+        self.returnedpower, self.returnedlum = app.calibration(self.N7745C, self.simu,
+            self.temperatureListK, self.temperatureListK[self.index], 
             self.returnedpower, self.returnedlum, self.wavelengths)
-       
+
         self.calibration_data = self.openJson("calibration_data")
         
         self.calibration_data["power_calib"] = self.returnedpower#Writing the power and luminance values in their files
@@ -427,7 +467,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.saveJson(self.calibration_data, "calibration_data")
         self.ui.valPow.setText(str(self.returnedpower))
         self.ui.valLum.setText(str(self.returnedlum))
-        
+                
         self.index += 1
         
         if self.index < self.n:
@@ -437,12 +477,16 @@ class Pyro(QtWidgets.QMainWindow):
         elif self.index == self.n: #When we measured all temperatures
         
             #Plotting and fitting the data
+            self.figure_LumPower.add_subplot(1, 1, 1)
             plot.drawLumPower(self.wavelengths, self.returnedlum, self.returnedpower)
             try : 
                 self.Alist, self.Blist, self.Clist = plot.nonlinearFit(self.wavelengths, self.returnedlum, self.returnedpower, self.cdir)#Applying a nonlinear regression model
             except RuntimeError:
                 print("Not able to fit the curve")
-                
+                                    
+            self.canvas_LumPower.draw()
+            plt.savefig(self.cdir + '/power_lum_calib_axcb.png', dpi=300)
+                            
             #Modifying buttons and labels to be able to reset
             self.ui.textTemperature.setText("")
             self.ui.startButton.setText("Reset")
@@ -460,12 +504,15 @@ class Pyro(QtWidgets.QMainWindow):
             print("\nClist",self.Clist)
             self.saveJson(self.calibration_data, "calibration_data")
             
-            self.N7745C.close() #Closing the link with the instrument
-            self.rm.close()
+            if self.simu == False:
+                self.N7745C.close() #Closing the link with the instrument
+                self.rm.close()
+            else:
+                print ("mode simulation calibMain")
             
             #Plotting the graph
-            self.ui.labelgraphUp.setPixmap(QPixmap(self.cdir + "/power_lum_calib_axcb.json"))
-            self.ui.labelgraphUp.setScaledContents(True)
+            #self.ui.labelgraphUp.setPixmap(QPixmap(self.cdir + "/power_lum_calib_axcb.png"))
+            #self.ui.labelgraphUp.setScaledContents(True)
             
     
     def resetCalib(self):        
@@ -568,7 +615,9 @@ class Pyro(QtWidgets.QMainWindow):
         #Separating json in dataframes to write it in csv
         #Might be possible to optimize this part
         print(window.sampleFolder + "continuous_sample_values.json")
-        dfsample = pd.read_json(window.sampleFolder + "continuous_sample_values.json")
+        print(window.cdir + window.sampleFolder + "continuous_sample_values.json")
+        #dfsample = pd.read_json(window.sampleFolder + "continuous_sample_values.json")
+        dfsample = pd.read_json(window.cdir + window.sampleFolder + "continuous_sample_values.json")
         contTimeList = pd.DataFrame(dfsample['contTimeList'].tolist()) 
         contTempListCel = pd.DataFrame(dfsample['contTempListCel'].tolist())
         contEpsList = pd.DataFrame(dfsample['contEpsList'].tolist())
@@ -595,7 +644,7 @@ class Pyro(QtWidgets.QMainWindow):
         for i in range(self.p):
             fieldnames.append('Residuals(%)'+str(i+1))
         #converting to csv
-        csvdfsample.to_csv(window.sampleFolder + "continuous_sample_values.csv",index=False,header=fieldnames,sep=';') 
+        csvdfsample.to_csv(window.cdir + window.sampleFolder + "continuous_sample_values.csv",index=False,header=fieldnames,sep=';') 
         
     
     def drawWvlgthLum(self,wavelength, lum_spl, lum_calib, temperatureListK, initGuessK):
@@ -686,6 +735,15 @@ class Pyro(QtWidgets.QMainWindow):
         
     def clearplotWidgetDown(self):
         self.plotWidgetDown.canvas.ax.clear()
+
+    """Partie du programme Acquisition rapide de la puissance des photodiodes"""
+
+    def FastOneAcquisition(self):            
+        #Plotting the data
+            """self.figure_FastAcq.add_subplot(1, 1, 1)
+            self.canvas_FastAcq.draw()"""
+            print('ça y est , ça acquire vite')
+    
     
     
 class ThreadMeasure(QThread):
@@ -734,7 +792,7 @@ class ThreadMeasure(QThread):
         
         self.nbMeasure = 0
         self.display = True
-        
+        self.simu = None
     
     def sampleMain(self):
         """Starts a parallel thread to run a measurement while modifying the GUI (Graphical User Interface)"""
@@ -742,9 +800,10 @@ class ThreadMeasure(QThread):
         #Stocking the values of wavelength and power        
         
         #Run the main function which reads the power at each photodiode
-        self.power_sample = app.run(
-        window.N7745C, 'sample', self.temperatureListK, self.temperatureListK[0],
+        
+        self.power_sample = app.run(window.N7745C, 'sample', self.simu, self.temperatureListK, self.temperatureListK[0],
         self.returnedpower, self.returnedlum, window.wavelengths)
+        
         print("power :",self.power_sample)
         for line in range(self.p):#For each photodiode
             #Calculating the luminance of the sample from its measured power and stocked A and B values

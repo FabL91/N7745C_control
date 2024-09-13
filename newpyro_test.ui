@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1415</width>
-    <height>971</height>
+    <width>1485</width>
+    <height>979</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,12 +19,12 @@
      <rect>
       <x>20</x>
       <y>10</y>
-      <width>1371</width>
-      <height>931</height>
+      <width>1451</width>
+      <height>951</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="Calibration">
      <property name="autoFillBackground">
@@ -38,12 +38,12 @@
        <rect>
         <x>570</x>
         <y>440</y>
-        <width>731</width>
+        <width>851</width>
         <height>431</height>
        </rect>
       </property>
       <property name="autoFillBackground">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(109,109,109);</string>
@@ -54,15 +54,15 @@
        <rect>
         <x>560</x>
         <y>10</y>
-        <width>731</width>
+        <width>861</width>
         <height>401</height>
        </rect>
       </property>
       <property name="autoFillBackground">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-color: rgb(109, 109, 109);</string>
+       <string notr="true">background-color: rgb(223, 223, 223);</string>
       </property>
       <property name="text">
        <string/>
@@ -420,60 +420,64 @@ color: rgb(255,255,255)</string>
       <property name="title">
        <string>Values</string>
       </property>
-      <widget class="QWidget" name="layoutWidget3">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>30</x>
-         <y>20</y>
-         <width>361</width>
-         <height>154</height>
+         <x>10</x>
+         <y>200</y>
+         <width>501</width>
+         <height>211</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <widget class="QLabel" name="labelvalLum">
-            <property name="styleSheet">
-             <string notr="true">background : rgba(255,255,255,0)</string>
-            </property>
-            <property name="text">
-             <string>Luminance [W.m-2.µm-1.str-1]</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTextBrowser" name="valLum">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Luminance with Planck's law (emissivity = 1 ; T +/- correction of the blackbody, see blackbody_calibration.py)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QLabel" name="labelValPow">
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Power [W]</string>
+          </property>
+         </widget>
         </item>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_7">
-          <item>
-           <widget class="QLabel" name="labelValPow">
-            <property name="styleSheet">
-             <string notr="true">background : rgba(255,255,255,0)</string>
-            </property>
-            <property name="text">
-             <string>Power [W]</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTextBrowser" name="valPow">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Power received by the photodiodes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QTextBrowser" name="valPow">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Power received by the photodiodes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>11</x>
+         <y>21</y>
+         <width>501</width>
+         <height>171</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QLabel" name="labelvalLum">
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Luminance [W.m-2.µm-1.str-1]</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextBrowser" name="valLum">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Luminance with Planck's law (emissivity = 1 ; T +/- correction of the blackbody, see blackbody_calibration.py)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -483,31 +487,12 @@ color: rgb(255,255,255)</string>
      <attribute name="title">
       <string>Sample</string>
      </attribute>
-     <widget class="QWidget" name="widgetDown" native="true">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
+     <widget class="QFrame" name="frameUp">
       <property name="geometry">
        <rect>
         <x>760</x>
-        <y>480</y>
-        <width>591</width>
-        <height>391</height>
-       </rect>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(109,109,109);</string>
-      </property>
-     </widget>
-     <widget class="QWidget" name="widgetUp" native="true">
-      <property name="geometry">
-       <rect>
-        <x>760</x>
-        <y>30</y>
-        <width>591</width>
+        <y>20</y>
+        <width>671</width>
         <height>431</height>
        </rect>
       </property>
@@ -1292,6 +1277,75 @@ color: rgb(255,255,255)</string>
         </item>
        </layout>
       </widget>
+     </widget>
+     <widget class="QWidget" name="widgetDown" native="true">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>760</x>
+        <y>460</y>
+        <width>671</width>
+        <height>431</height>
+       </rect>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(109,109,109);</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Fast Acquisition</string>
+     </attribute>
+     <widget class="QPushButton" name="ButtonStartOneFast">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>161</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Start One Fast Mesure</string>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QFrame" name="GraphAcqFast">
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>20</y>
+        <width>1131</width>
+        <height>891</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(223, 223, 223);</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
      </widget>
     </widget>
    </widget>

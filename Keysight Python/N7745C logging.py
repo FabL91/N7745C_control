@@ -14,21 +14,21 @@ N7745C=rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
 print(N7745C.query("*IDN?")) #The IDeNtification query 
 
 #N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings
-N7745C.write(":SENSe2:CHANnel:FUNCtion:STATe LOGG,STOP") #Enables/Disables the logging, MinMax, or stability data acquisition function mode
-N7745C.write(":SENSe2:CHANnel:POWer:GAIN:AUTO 0") #Set the Auto Gain
-N7745C.write(":SENSe2:CHANnel:POWer:RANGe:AUTO 0") #Enables or disables automatic power ranging for the slot
-N7745C.write(":SENSe2:CHANnel:POWer:RANGe:UPPer -10 DBM") #Sets the power range for the module.
-N7745C.write(":SENSe2:CHANnel:POWer:UNIT 1") #Sets the sensor power unit 
-N7745C.write(":SENSe2:CHANnel:POWer:WAVelength 1552NM")#Sets the sensor wavelength.
-N7745C.write(":SENSe2:CHANnel:FUNCtion:PARameter:LOGGing 20,100 MS")#Sets the number of data points and the averaging time for the logging data acquisition function
-N7745C.write(":TRIGger2:CHANnel:INPut IGN")#Sets the incoming trigger response and arms the slot
-N7745C.write(":SENSe2:CHANnel:FUNCtion:STATe LOGG,STAR")#Enables/Disables the logging
+N7745C.write(":SENSe2:FUNCtion:STATe LOGG,STOP") #Enables/Disables the logging, MinMax, or stability data acquisition function mode
+N7745C.write(":SENSe2:POWer:GAIN:AUTO 0") #Set the Auto Gain
+N7745C.write(":SENSe2:POWer:RANGe:AUTO 0") #Enables or disables automatic power ranging for the slot
+N7745C.write(":SENSe2:POWer:RANGe:UPPer -10 DBM") #Sets the power range for the module.
+N7745C.write(":SENSe2:POWer:UNIT 1") #Sets the sensor power unit 
+N7745C.write(":SENSe2:POWer:WAVelength 1552NM")#Sets the sensor wavelength.
+N7745C.write(":SENSe2:FUNCtion:PARameter:LOGGing 200,1 MS")#Sets the number of data points and the averaging time for the logging data acquisition function
+N7745C.write(":TRIGger2:INPut IGN")#Sets the incoming trigger response and arms the slot
+N7745C.write(":SENSe2:FUNCtion:STATe LOGG,STAR")#Enables/Disables the logging
 #status = N7745C.query(":SENSe2:CHANnel:FUNCtion:STATe?")#Enables/Disables the logging
 #print(status)
 # Loop until status is 'LOGGING_STABILITY,COMPLETE'
 def get_status():
     """Function to query the status"""
-    return N7745C.query(":SENSe2:CHANnel:FUNCtion:STATe?")
+    return N7745C.query(":SENSe2:FUNCtion:STATe?")
 status = get_status()
 
 counter = 0 # Initialize counter for iterations
