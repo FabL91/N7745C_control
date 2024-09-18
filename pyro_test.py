@@ -85,21 +85,23 @@ class Pyro(QtWidgets.QMainWindow):
         #Interface setup
         self.ui = Ui_Pyro()
         self.ui.setupUi(self)
-        self.setWindowTitle("Pyro")        
+        self.setWindowTitle("Pyro")
+
+        rm = visa.ResourceManager()
+        rm_list = list(rm.list_resources())
+        rm_list.append("Mode Simulation") 
+
         self.N7745C = None #à retirer si ce n'est plus en mode simulation
         self.ui.check_simu.stateChanged.connect(self.boolSimu)
         self.ui.check_simu.setChecked(False)
         self.simu = self.ui.check_simu.isChecked()
         
-        if self.simu == False:
-
-            #power meter adress
-            self.ui.id_powermeter.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
-            self.ui.id_powermeterS.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
         
-        else:
-            self.ui.id_powermeter.addItem('Mode Simulation')
-            self.ui.id_powermeterS.addItem('Mode Simulation') 
+
+        #power meter adress
+        self.ui.id_powermeter.addItems(rm_list)
+        self.ui.id_powermeterS.addItems(rm_list)
+                
         
         #Preparing sample graphs
         self.plotWidgetUp = MplWidget(self.ui.frameUp)
@@ -112,6 +114,9 @@ class Pyro(QtWidgets.QMainWindow):
         self.plotWidgetDown.canvas.axs[0].set_ylabel("Temperature (°C)")
         self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
         
+       #Connecting buttons to their functions and hidding for Fast acquisition
+        self.ui.nbre_pts.textChanged.connect(self.NbrePts_changed)
+       
         #Connecting buttons to their functions and hidding some that are not useful yet
         self.ui.startButton.clicked.connect(self.startCalib)
         self.ui.startButtonS.clicked.connect(self.startSample)
@@ -128,6 +133,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.stopButton.clicked.connect(self.stopContMode)
         self.ui.chooseFolder.clicked.connect(self.folder)
         self.ui.chooseFolderS.clicked.connect(self.folder)
+        self.ui.ConnectButton.clicked.connect(self.connection)
         #adding a toolbar to the top left of the GUI, with 4 buttons : open folder, one time measure, continuous measure and quit
         self.toolbar = QToolBar("Toolbar")
         self.toolbar.setIconSize(QSize(32,32))
@@ -261,6 +267,7 @@ class Pyro(QtWidgets.QMainWindow):
     def folder(self):
         """chooses the folder where the files will be saved """
         #current directory
+        print("choose folder")
         self.cdir = QFileDialog.getExistingDirectory(self) +'/' #Current directory
         self.ui.labelDir.setText(self.cdir)
         self.ui.labelDirS.setText(self.cdir)
@@ -270,11 +277,20 @@ class Pyro(QtWidgets.QMainWindow):
     def default(self):
         """fills in the labels with the values from the parameters file (parameters.json)"""
         self.par = self.openJson("parameters")
-        print(self.cdir + "parameters")        
+        print(self.cdir + "parameters")
+        self.id_powermeter = self.par["id_powermeter"]         
         self.temperature = self.par["temperature_ListCel"]
         self.wavelengths = self.par["wavelengths"]
         self.avgTime = self.par["average_time"]
         
+        if self.id_powermeter == "TCPIP0::169.254.241.203::inst0::INSTR":
+            self.ui.id_powermeter.setCurrentIndex(0)
+            self.ui.id_powermeterS.setCurrentIndex(0)
+        else:
+            self.ui.id_powermeter.setCurrentIndex(1)
+            self.ui.id_powermeterS.setCurrentIndex(1)
+
+               
         #calibration tab        
         self.ui.temperature.setText(str(self.par["temperature_ListCel"]))
         self.ui.wavelength.setText(str(self.par["wavelengths"]))    
@@ -317,27 +333,28 @@ class Pyro(QtWidgets.QMainWindow):
     
     
     def connection(self):
-        if self.simu == False:
+        if not self.simu:
             
             """Connects to the instrument"""
             self.rm = visa.ResourceManager() #visa connection
             self.N7745C = self.rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
-            self.N7745C.timeout = 10000
-            self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
+            #self.N7745C.timeout = 10000
+            #self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
             self.N7745C.write("*IDN?")#Query identification string *IDN?
-            print(self.N7745C.read())
+            self.ui.textTemperature.setText(f"Identification du powermètre réussi {self.N7745C.read()}")
+            #print(self.N7745C.read())
             if self.Errorcheck(self.N7745C) == []: #8 channels on the N7745C
                 self.val_run = True
             
                 #Presets the N7745C and wait for operation complete via the *OPC?, i.e.
                 #the operation complete query.
-                self.N7745C.write("SYST:PRES;*OPC?")
-                print("Preset complete, *OPC? returned : " + self.N7745C.read())
+                #self.N7745C.write("SYST:PRES;*OPC?")
+                #print("Preset complete, *OPC? returned : " + self.N7745C.read())
                     
-                self.N7745C.write(':configure:measurement:setting:preset')#Resets the settings            
+                """self.N7745C.write(':configure:measurement:setting:preset')#Resets the settings            
                 self.N7745C.write(':sense:power:unit:all Watt')#Sets the sensor power unit of all channels to Watt
                 self.N7745C.write(':sense1:power:gain:auto 1')#auto gain
-                print('\n------------------------\n')
+                print('\n------------------------\n')"""
 
         else:
             print ("mode simulation")
@@ -738,12 +755,85 @@ class Pyro(QtWidgets.QMainWindow):
 
     """Partie du programme Acquisition rapide de la puissance des photodiodes"""
 
+    def NbrePts_changed(self, text):
+        print("Text changed...")
+        print(text)
+
     def FastOneAcquisition(self):            
         #Plotting the data
-            """self.figure_FastAcq.add_subplot(1, 1, 1)
-            self.canvas_FastAcq.draw()"""
+        pas_tps = 1
+        nbre_pts = 1000
+        fast_ax = self.figure_FastAcq.add_subplot(1, 1, 1)
+
+        if not self.simu:
+            
             print('ça y est , ça acquire vite')
-    
+            self.N7745C.write(":SENSe2:FUNCtion:STATe LOGG,STOP") #Enables/Disables the logging, MinMax, or stability data acquisition function mode
+            self.N7745C.write(":SENSe2:POWer:GAIN:AUTO 0") #Set the Auto Gain
+            self.N7745C.write(":SENSe2:POWer:RANGe:AUTO 0") #Enables or disables automatic power ranging for the slot
+            self.N7745C.write(":SENSe2:POWer:RANGe:UPPer -10 DBM") #Sets the power range for the module.
+            self.N7745C.write(":SENSe2:POWer:UNIT 1") #Sets the sensor power unit 
+            self.N7745C.write(":SENSe2:FUNCtion:PARameter:LOGGing 1000,1 MS")#Sets the number of data points and the averaging time for the logging data acquisition function
+            self.N7745C.write(":TRIGger2:INPut IGN")#Sets the incoming trigger response and arms the slot
+            self.N7745C.write(":SENSe2:FUNCtion:STATe LOGG,STAR")#Enables/Disables the logging
+            
+            status = self.get_status()
+            counter = 0 # Initialize counter for iterations
+            start_time = time.time() # Initialize timer
+
+            while "COMPLETE" not in status:
+                # Increment counter
+                counter += 1    
+                
+                time.sleep(0.25)    # Wait for a specified time before querying again (e.g., 1 second)
+                # Query the status again
+                status = self.get_status()    
+                
+                # Optionally, print the status to monitor the progress
+                elapsed_time = time.time() - start_time
+                print(f"Iteration {counter}: Current status: {status}, Time elapsed: {elapsed_time:.2f} seconds")
+
+            elapsed_time = time.time() - start_time
+            print(f"Status is COMPLETE. Exiting loop after {counter} iterations and {elapsed_time:.2f} seconds.")
+
+            data = self.N7745C.query_binary_values(':SENSE2:CHANnel:FUNCtion:RESult?','f',False)
+            temps = list(range(0, nbre_pts, pas_tps))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
+            
+            #print(data)
+
+            fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
+            self.canvas_FastAcq.draw()
+
+            #self.N7745C.close()
+            #self.rm.close()
+
+
+
+        else:
+            print('On est en mode Simulation') 
+            ax1 = self.figure_FastAcq.add_subplot(1, 1, 1)
+                # make data
+            x = np.linspace(0, 10, 100)
+            y = 4 + 1 * np.sin(2 * x)
+            x2 = np.linspace(0, 10, 25)
+            y2 = 4 + 1 * np.sin(3 * x2)
+            
+            ax1.plot(x2, y2 + 2.5, 'x', markeredgewidth=2, label='sinusoïd croix')
+            ax1.plot(x, y, color='tab:orange', linewidth=2.0, label='sinusoïd line')
+            ax1.plot(x2, y2 - 2.5, 'o-', linewidth=2)
+
+            ax1.set(xlim=(0, 8), xticks=np.arange(1, 8),
+            ylim=(0, 8), yticks=np.arange(1, 8))
+            ax1.set_xlabel("Timing")
+            ax1.set_ylabel("Amplitude")
+            ax1.grid()
+            ax1.legend()
+
+            self.canvas_FastAcq.draw()
+
+    def get_status(self):
+        """Function to query the status"""
+        return self.N7745C.query(":SENSe2:FUNCtion:STATe?")
     
     
 class ThreadMeasure(QThread):

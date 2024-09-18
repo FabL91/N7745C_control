@@ -12,7 +12,7 @@ def run(N7745C, state, simu, temperatureListK, temperature, returnedpower, retur
     power = returnedpower
     luminance = returnedlum
     i = temperatureListK.index(temperature)
-    #temp_values =[]
+    #temp_values = []
             
     
     for j in range(p): #Photodiode
