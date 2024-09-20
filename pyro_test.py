@@ -115,8 +115,12 @@ class Pyro(QtWidgets.QMainWindow):
         self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
         
        #Connecting buttons to their functions and hidding for Fast acquisition
-        self.ui.nbre_pts.textChanged.connect(self.NbrePts_changed)
+        self.ui.nbre_pts.textEdited.connect(self.NbrePts_changed)
+        self.ui.Ar_Time.textEdited.connect(self.AverageTime_changed)
+        self.ui.List_Unit.addItems(["S", "MS", "US"])
+        self.ui.List_Unit.currentTextChanged.connect(self.Unit_changed)
        
+
         #Connecting buttons to their functions and hidding some that are not useful yet
         self.ui.startButton.clicked.connect(self.startCalib)
         self.ui.startButtonS.clicked.connect(self.startSample)
@@ -756,15 +760,23 @@ class Pyro(QtWidgets.QMainWindow):
     """Partie du programme Acquisition rapide de la puissance des photodiodes"""
 
     def NbrePts_changed(self, text):
-        print("Text changed...")
-        print(text)
+        print(f"Nbre de pts changed...{text}")
+        self.nbre_pts = text
+
+    def AverageTime_changed(self, text):
+        print(f"Temps d'intégration changed...{text}")
+        self.Aver_Time = text
+
+    def Unit_changed(self, text):
+        print(f"Unité changed...{text}")
+        self.unit = text
+    
 
     def FastOneAcquisition(self):            
         #Plotting the data
-        pas_tps = 1
-        nbre_pts = 1000
+                
         fast_ax = self.figure_FastAcq.add_subplot(1, 1, 1)
-
+        
         if not self.simu:
             
             print('ça y est , ça acquire vite')
@@ -773,7 +785,7 @@ class Pyro(QtWidgets.QMainWindow):
             self.N7745C.write(":SENSe2:POWer:RANGe:AUTO 0") #Enables or disables automatic power ranging for the slot
             self.N7745C.write(":SENSe2:POWer:RANGe:UPPer -10 DBM") #Sets the power range for the module.
             self.N7745C.write(":SENSe2:POWer:UNIT 1") #Sets the sensor power unit 
-            self.N7745C.write(":SENSe2:FUNCtion:PARameter:LOGGing 1000,1 MS")#Sets the number of data points and the averaging time for the logging data acquisition function
+            self.N7745C.write(f":SENSe2:FUNCtion:PARameter:LOGGing {self.nbre_pts},{self.Aver_Time} {self.unit}")#Sets the number of data points and the averaging time for the logging data acquisition function
             self.N7745C.write(":TRIGger2:INPut IGN")#Sets the incoming trigger response and arms the slot
             self.N7745C.write(":SENSe2:FUNCtion:STATe LOGG,STAR")#Enables/Disables the logging
             
@@ -782,10 +794,10 @@ class Pyro(QtWidgets.QMainWindow):
             start_time = time.time() # Initialize timer
 
             while "COMPLETE" not in status:
-                # Increment counter
+                # Increment counter9
                 counter += 1    
                 
-                time.sleep(0.25)    # Wait for a specified time before querying again (e.g., 1 second)
+                time.sleep(0.15)    # Wait for a specified time before querying again (e.g., 1 second)
                 # Query the status again
                 status = self.get_status()    
                 
@@ -797,9 +809,11 @@ class Pyro(QtWidgets.QMainWindow):
             print(f"Status is COMPLETE. Exiting loop after {counter} iterations and {elapsed_time:.2f} seconds.")
 
             data = self.N7745C.query_binary_values(':SENSE2:CHANnel:FUNCtion:RESult?','f',False)
-            temps = list(range(0, nbre_pts, pas_tps))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
+            temps = list(range(0, int(self.nbre_pts), 1))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
             
-            #print(data)
+
+            print(len(data))
+            print(len(temps))
 
             fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
             self.canvas_FastAcq.draw()
@@ -1008,7 +1022,8 @@ class ThreadMeasure(QThread):
         self.resultTemp.emit(format(self.fit_T, '.1f'))
         self.resultEps.emit(format(self.fit_epsilon, '.4f'))
         self.resultnbMeas.emit(str(self.nbMeasure))
-    
+
+"""Conversion : pyuic5 newpyro_test.ui -o newpyro_test.py"""  
 
 #Creating a window with the application
 if __name__ == "__main__":
