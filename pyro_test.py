@@ -57,7 +57,7 @@ color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
 #plt.use('QT5Agg')
 
 # Matplotlib canvas class to create figure
-class MplCanvas(FigureCanvas):
+"""class MplCanvas(FigureCanvas):
     def __init__(self):
         self.fig = Figure(figsize=(6,4))
         self.ax = self.fig.add_subplot(111)
@@ -72,7 +72,7 @@ class MplWidget(QtWidgets.QWidget):
         self.canvas = MplCanvas()# Create canvas object
         self.vbl = QtWidgets.QVBoxLayout()         # Set box for plotting
         self.vbl.addWidget(self.canvas)
-        self.setLayout(self.vbl)    
+        self.setLayout(self.vbl)   """ 
     
 
 
@@ -104,15 +104,15 @@ class Pyro(QtWidgets.QMainWindow):
                 
         
         #Preparing sample graphs
-        self.plotWidgetUp = MplWidget(self.ui.frameUp)
+        """self.plotWidgetUp = MplWidget(self.ui.frameUp)"""
         
-        self.plotWidgetDown = MplWidget(self.ui.widgetDown)
-        self.plotWidgetDown.canvas.ax.set_visible(True)
+        """self.plotWidgetDown = MplWidget(self.ui.widgetDown)"""
+        """self.plotWidgetDown.canvas.ax.set_visible(True)
         self.gs = self.plotWidgetDown.canvas.fig.add_gridspec(2, hspace=0) #For continuous measures, emissivity and temp vs time
         self.plotWidgetDown.canvas.axs = self.gs.subplots(sharex=True)  
         self.plotWidgetDown.canvas.axs[0].set_xlabel("Time (s)")
         self.plotWidgetDown.canvas.axs[0].set_ylabel("Temperature (°C)")
-        self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
+        self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")"""
         
        #Connecting buttons to their functions and hidding for Fast acquisition
         self.ui.nbre_pts.textEdited.connect(self.NbrePts_changed)
@@ -186,7 +186,7 @@ class Pyro(QtWidgets.QMainWindow):
         # Créer une figure Matplotlib
         #Pour le graphique de la calibration
 
-        self.figure_LumPower = plt.figure(layout='tight')
+        """self.figure_LumPower = plt.figure(layout='tight')
         self.canvas_LumPower = FigureCanvas(self.figure_LumPower)
         toolbar_LumPower = NavigationToolbar(self.canvas_LumPower, self)
     
@@ -194,7 +194,7 @@ class Pyro(QtWidgets.QMainWindow):
         graph_LumPower = QVBoxLayout()
         graph_LumPower.addWidget(toolbar_LumPower)
         graph_LumPower.addWidget(self.canvas_LumPower)
-        self.LumPower.setLayout(graph_LumPower)
+        self.LumPower.setLayout(graph_LumPower)"""
 
         #Pour le graphique de l'acquisition rapide
 
@@ -207,6 +207,12 @@ class Pyro(QtWidgets.QMainWindow):
         graph_FastAcq.addWidget(toolbar_FastAcq)
         graph_FastAcq.addWidget(self.canvas_FastAcq)
         self.FastAcq.setLayout(graph_FastAcq)
+        
+        if not self.simu:
+            self.fast_ax = self.figure_FastAcq.add_subplot()
+        else:
+            self.ax1 = self.figure_FastAcq.add_subplot()
+        
                        
               
         
@@ -775,8 +781,7 @@ class Pyro(QtWidgets.QMainWindow):
     def FastOneAcquisition(self):            
         #Plotting the data
                 
-        fast_ax = self.figure_FastAcq.add_subplot(1, 1, 1)
-        
+                
         if not self.simu:
             
             print('ça y est , ça acquire vite')
@@ -809,13 +814,14 @@ class Pyro(QtWidgets.QMainWindow):
             print(f"Status is COMPLETE. Exiting loop after {counter} iterations and {elapsed_time:.2f} seconds.")
 
             data = self.N7745C.query_binary_values(':SENSE2:CHANnel:FUNCtion:RESult?','f',False)
-            temps = list(range(0, int(self.nbre_pts), 1))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
+            temps = list(0 + np.arange(int(self.nbre_pts)) * int(self.Aver_Time))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
             
 
             print(len(data))
             print(len(temps))
 
-            fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
+            self.fast_ax.axes.clear()
+            self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
             self.canvas_FastAcq.draw()
 
             #self.N7745C.close()
@@ -825,24 +831,24 @@ class Pyro(QtWidgets.QMainWindow):
 
         else:
             print('On est en mode Simulation') 
-            ax1 = self.figure_FastAcq.add_subplot(1, 1, 1)
-                # make data
-            x = np.linspace(0, 10, 100)
-            y = 4 + 1 * np.sin(2 * x)
-            x2 = np.linspace(0, 10, 25)
-            y2 = 4 + 1 * np.sin(3 * x2)
             
-            ax1.plot(x2, y2 + 2.5, 'x', markeredgewidth=2, label='sinusoïd croix')
-            ax1.plot(x, y, color='tab:orange', linewidth=2.0, label='sinusoïd line')
-            ax1.plot(x2, y2 - 2.5, 'o-', linewidth=2)
-
-            ax1.set(xlim=(0, 8), xticks=np.arange(1, 8),
-            ylim=(0, 8), yticks=np.arange(1, 8))
-            ax1.set_xlabel("Timing")
-            ax1.set_ylabel("Amplitude")
-            ax1.grid()
-            ax1.legend()
-
+            #ax1 = self.figure_FastAcq.add_subplot()
+                            # make data
+            x = 0 + np.arange(int(self.nbre_pts)) * int(self.Aver_Time)
+            y = 4 + 1 * np.sin(2 * x)
+            #x2 = np.linspace(0, 10, 25)
+            #y2 = 4 + 1 * np.sin(3 * x2)
+            self.ax1.axes.clear()
+            #gax1.plot(x2, y2 + 2.5, 'x', markeredgewidth=2, label='sinusoïd croix')
+            self.ax1.plot(x, y, color='tab:orange', linewidth=2.0, label='sinusoïd line')
+            #ax1.plot(x2, y2 - 2.5, 'o-', linewidth=2)
+            #ax1.set(xlim=(0, int(self.nbre_pts)), ylim=(0, 8), yticks=np.arange(1, 8))
+            #ax1.axis((0,int(self.nbre_pts),1,8))
+            
+            self.ax1.set_xlabel("Timing")
+            self.ax1.set_ylabel("Amplitude")
+            self.ax1.grid()
+            self.ax1.legend()
             self.canvas_FastAcq.draw()
 
     def get_status(self):
