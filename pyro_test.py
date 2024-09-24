@@ -57,7 +57,7 @@ color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
 #plt.use('QT5Agg')
 
 # Matplotlib canvas class to create figure
-"""class MplCanvas(FigureCanvas):
+class MplCanvas(FigureCanvas):
     def __init__(self):
         self.fig = Figure(figsize=(6,4))
         self.ax = self.fig.add_subplot(111)
@@ -72,7 +72,7 @@ class MplWidget(QtWidgets.QWidget):
         self.canvas = MplCanvas()# Create canvas object
         self.vbl = QtWidgets.QVBoxLayout()         # Set box for plotting
         self.vbl.addWidget(self.canvas)
-        self.setLayout(self.vbl)   """ 
+        self.setLayout(self.vbl) 
     
 
 
@@ -93,7 +93,7 @@ class Pyro(QtWidgets.QMainWindow):
 
         self.N7745C = None #à retirer si ce n'est plus en mode simulation
         self.ui.check_simu.stateChanged.connect(self.boolSimu)
-        self.ui.check_simu.setChecked(False)
+        self.ui.check_simu.setChecked(True)
         self.simu = self.ui.check_simu.isChecked()
         
         
@@ -104,15 +104,15 @@ class Pyro(QtWidgets.QMainWindow):
                 
         
         #Preparing sample graphs
-        """self.plotWidgetUp = MplWidget(self.ui.frameUp)"""
+        self.plotWidgetUp = MplWidget(self.ui.frameUp)
         
-        """self.plotWidgetDown = MplWidget(self.ui.widgetDown)"""
-        """self.plotWidgetDown.canvas.ax.set_visible(True)
+        self.plotWidgetDown = MplWidget(self.ui.widgetDown)
+        self.plotWidgetDown.canvas.ax.set_visible(True)
         self.gs = self.plotWidgetDown.canvas.fig.add_gridspec(2, hspace=0) #For continuous measures, emissivity and temp vs time
         self.plotWidgetDown.canvas.axs = self.gs.subplots(sharex=True)  
         self.plotWidgetDown.canvas.axs[0].set_xlabel("Time (s)")
         self.plotWidgetDown.canvas.axs[0].set_ylabel("Temperature (°C)")
-        self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")"""
+        self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
         
        #Connecting buttons to their functions and hidding for Fast acquisition
         self.ui.nbre_pts.textEdited.connect(self.NbrePts_changed)
@@ -186,7 +186,7 @@ class Pyro(QtWidgets.QMainWindow):
         # Créer une figure Matplotlib
         #Pour le graphique de la calibration
 
-        """self.figure_LumPower = plt.figure(layout='tight')
+        self.figure_LumPower = plt.figure(layout='tight')
         self.canvas_LumPower = FigureCanvas(self.figure_LumPower)
         toolbar_LumPower = NavigationToolbar(self.canvas_LumPower, self)
     
@@ -194,7 +194,7 @@ class Pyro(QtWidgets.QMainWindow):
         graph_LumPower = QVBoxLayout()
         graph_LumPower.addWidget(toolbar_LumPower)
         graph_LumPower.addWidget(self.canvas_LumPower)
-        self.LumPower.setLayout(graph_LumPower)"""
+        self.LumPower.setLayout(graph_LumPower)
 
         #Pour le graphique de l'acquisition rapide
 
@@ -292,6 +292,9 @@ class Pyro(QtWidgets.QMainWindow):
         self.temperature = self.par["temperature_ListCel"]
         self.wavelengths = self.par["wavelengths"]
         self.avgTime = self.par["average_time"]
+        self.nbre_pts = self.par["nbre_pts"]
+        self.Aver_Time = self.par["Ar_Time"]
+        self.unit = self.par["List_Unit"]
         
         if self.id_powermeter == "TCPIP0::169.254.241.203::inst0::INSTR":
             self.ui.id_powermeter.setCurrentIndex(0)
@@ -305,6 +308,9 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.temperature.setText(str(self.par["temperature_ListCel"]))
         self.ui.wavelength.setText(str(self.par["wavelengths"]))    
         self.ui.avg_time.setText(str(self.par["average_time"]))
+        self.ui.nbre_pts.setText(self.par["nbre_pts"])
+        self.ui.Ar_Time.setText(self.par["Ar_Time"])
+        self.ui.List_Unit.setEditText(self.par["List_Unit"])
         
         #sample tab
         self.ui.avg_timeS.setText(str(self.par["average_time"]))
@@ -767,15 +773,24 @@ class Pyro(QtWidgets.QMainWindow):
 
     def NbrePts_changed(self, text):
         print(f"Nbre de pts changed...{text}")
+        self.par = self.openJson("parameters") # Ouverture du fichier Json "parameters"
         self.nbre_pts = text
+        self.par["nbre_pts"] = text
+        self.saveJson(self.par,"parameters") #Sauvegarde dans le fichier Json "parameters"
 
     def AverageTime_changed(self, text):
         print(f"Temps d'intégration changed...{text}")
+        self.par = self.openJson("parameters")
         self.Aver_Time = text
+        self.par["Ar_Time"] = text
+        self.saveJson(self.par,"parameters")
 
     def Unit_changed(self, text):
         print(f"Unité changed...{text}")
+        self.par = self.openJson("parameters")
         self.unit = text
+        self.par["List_Unit"] = text
+        self.saveJson(self.par,"parameters")
     
 
     def FastOneAcquisition(self):            
