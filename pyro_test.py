@@ -37,6 +37,7 @@ import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
 from newpyro_test import Ui_Pyro #Interface file
 #from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
+import Loop_for_time as lfp
 
 
 
@@ -208,10 +209,8 @@ class Pyro(QtWidgets.QMainWindow):
         graph_FastAcq.addWidget(self.canvas_FastAcq)
         self.FastAcq.setLayout(graph_FastAcq)
         
-        if not self.simu:
-            self.fast_ax = self.figure_FastAcq.add_subplot()
-        else:
-            self.ax1 = self.figure_FastAcq.add_subplot()
+        self.fast_ax = self.figure_FastAcq.add_subplot()
+        
         
                        
               
@@ -310,7 +309,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.avg_time.setText(str(self.par["average_time"]))
         self.ui.nbre_pts.setText(self.par["nbre_pts"])
         self.ui.Ar_Time.setText(self.par["Ar_Time"])
-        self.ui.List_Unit.setEditText(self.par["List_Unit"])
+        self.ui.List_Unit.setCurrentText(self.par["List_Unit"])
         
         #sample tab
         self.ui.avg_timeS.setText(str(self.par["average_time"]))
@@ -847,24 +846,24 @@ class Pyro(QtWidgets.QMainWindow):
         else:
             print('On est en mode Simulation') 
             
-            #ax1 = self.figure_FastAcq.add_subplot()
-                            # make data
+            
             x = 0 + np.arange(int(self.nbre_pts)) * int(self.Aver_Time)
             y = 4 + 1 * np.sin(2 * x)
             #x2 = np.linspace(0, 10, 25)
             #y2 = 4 + 1 * np.sin(3 * x2)
-            self.ax1.axes.clear()
-            #gax1.plot(x2, y2 + 2.5, 'x', markeredgewidth=2, label='sinusoïd croix')
-            self.ax1.plot(x, y, color='tab:orange', linewidth=2.0, label='sinusoïd line')
-            #ax1.plot(x2, y2 - 2.5, 'o-', linewidth=2)
-            #ax1.set(xlim=(0, int(self.nbre_pts)), ylim=(0, 8), yticks=np.arange(1, 8))
-            #ax1.axis((0,int(self.nbre_pts),1,8))
+            self.fast_ax.axes.clear()
+            #.fast_ax.plot(x2, y2 + 2.5, 'x', markeredgewidth=2, label='sinusoïd croix')
+            self.fast_ax.plot(x, y, color='tab:blue', linewidth=2.0, label='fast one mesure')
+            #fast_ax.plot(x2, y2 - 2.5, 'o-', linewidth=2)
+            #fast_ax.set(xlim=(0, int(self.nbre_pts)), ylim=(0, 8), yticks=np.arange(1, 8))
+            #fast_ax.axis((0,int(self.nbre_pts),1,8))
             
-            self.ax1.set_xlabel("Timing")
-            self.ax1.set_ylabel("Amplitude")
-            self.ax1.grid()
-            self.ax1.legend()
+            self.fast_ax.set_xlabel(f"Temps d'acquisition {self.unit}")
+            self.fast_ax.set_ylabel("Puissance (W)")
+            self.fast_ax.grid()
+            self.fast_ax.legend()
             self.canvas_FastAcq.draw()
+            
 
     def get_status(self):
         """Function to query the status"""
