@@ -31,7 +31,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Calibration">
      <property name="autoFillBackground">
@@ -1683,9 +1683,24 @@ color: rgb(255,255,255)</string>
        </rect>
       </property>
       <property name="title">
-       <string>GroupBox</string>
+       <string>Paramètres</string>
       </property>
      </widget>
+     <zorder>groupBox</zorder>
+     <zorder>ButtonStartOneFast</zorder>
+     <zorder>GraphAcqFast</zorder>
+     <zorder>nbre_pts</zorder>
+     <zorder>label</zorder>
+     <zorder>Ar_Time</zorder>
+     <zorder>label_3</zorder>
+     <zorder>List_Unit</zorder>
+     <zorder>label_4</zorder>
+     <zorder>progressBar</zorder>
+     <zorder>Photodiode_1</zorder>
+     <zorder>Photodiode_2</zorder>
+     <zorder>Photodiode_3</zorder>
+     <zorder>Photodiode_4</zorder>
+     <zorder>label_2</zorder>
     </widget>
    </widget>
   </widget>

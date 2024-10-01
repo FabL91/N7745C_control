@@ -88,8 +88,7 @@ class MaPremiereFenetre(QWidget):
             self.worker.start()  # Set worker's running flag to True
             self.thread.start()  # Start the thread
         print("démarrer")
-        print(self.thread)
-
+        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
