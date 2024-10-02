@@ -3,7 +3,7 @@ import time
 import numpy as np
 """config du powermeter pour une acquisition rapide"""
 
-def UneAcquisition(N7745C, NumPhd, nbre_pts, Aver_Time, unit):
+def run(N7745C, NumPhd, nbre_pts, Aver_Time, unit):
 
     N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings
     N7745C.write(f":SENSe{NumPhd}:FUNCtion:STATe LOGG,STOP") #Enables/Disables the logging, MinMax, or stability data acquisition function mode

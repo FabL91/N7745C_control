@@ -23,6 +23,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize #,QObject
 from PyQt5.QtWidgets import QFileDialog, QWidget, QVBoxLayout, QToolBar, QAction, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
 
+
 from matplotlib import use
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -834,14 +835,15 @@ class Pyro(QtWidgets.QMainWindow):
         self.saveJson(self.par,"parameters")
     
 
-    def FastOneAcquisition(self):            
-        #Plotting the data
-         
-                
+    def FastOneAcquisition(self):
+        # Instantie and start un nouveau thread d'acquisition rapide
+        instanced_thread = FastWorkerThread(self)
+        instanced_thread.start()
 
         if not self.simu:
-
-            data , temps = OA.UneAcquisition(self.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit)
+            
+            
+            data , temps = OA.run(self.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit)
             # Appeler la fonction you
             """OA.you()
             # Utiliser les valeurs
@@ -1049,10 +1051,7 @@ class ThreadMeasure(QThread):
             else:
                 self.continuousMeasure()
 
-    def run_fast(self):
-      self.power_FastAcqu = OA.UneAcquisition()
-
-            
+                
     def continuousMeasure(self):
         self.sampleMain()
         self.display=False
@@ -1072,6 +1071,31 @@ class ThreadMeasure(QThread):
         self.resultTemp.emit(format(self.fit_T, '.1f'))
         self.resultEps.emit(format(self.fit_epsilon, '.4f'))
         self.resultnbMeas.emit(str(self.nbMeasure))
+
+"""---------Partie Thread pour Acquisition rapide Keysight"""
+
+class FastMySignals(QObject):
+    signal_str = pyqtSignal(str)
+    signal_int = pyqtSignal(int)
+
+
+
+class FastWorkerThread(QThread):
+    def __init__(self, parent=None):
+        QThread.__init__(self, parent)
+        # Instantiate signals and connect signals to the slots
+        self.signals = FastMySignals()
+        self.signals.signal_str.connect(parent.update_str_field)
+        self.signals.signal_int.connect(parent.update_int_field)
+
+    def run(self):
+        # Do something on the worker thread
+        a = 1 + 1
+        # Emit signals whenever you want
+        self.signals.signal_int.emit(a)
+        self.signals.signal_str.emit("This text comes to Main thread from our Worker thread.")
+
+
 
 """Conversion : pyuic5 newpyro_test.ui -o newpyro_test.py"""  
 
