@@ -19,9 +19,10 @@ import time
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtTest import QTest
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize #,QObject
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize, QObject
 from PyQt5.QtWidgets import QFileDialog, QWidget, QVBoxLayout, QToolBar, QAction, QLabel
 from PyQt5.QtGui import QIcon, QPixmap
+from PySide2.QtCore import Slot
 
 
 from matplotlib import use
@@ -89,6 +90,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle("Pyro")
 
+        
         rm = visa.ResourceManager()
         rm_list = list(rm.list_resources())
         rm_list.append("Mode Simulation") 
@@ -186,6 +188,8 @@ class Pyro(QtWidgets.QMainWindow):
 
         #Graphique de visualisation de l'acquisition rapide 13/09/2024
         self.FastAcq = self.ui.GraphAcqFast
+        self.fast_temps = []
+        self.fast_data = []
 
         # Initialiser Matplotlib
         self.init_matplotlib()
@@ -269,6 +273,13 @@ class Pyro(QtWidgets.QMainWindow):
     def setValNbMeas(self, val):
         self.ui.valNbMeasure.setText(val) #number of measures
     
+    def Update_Fastplot(self, temps, data):
+
+        """Slot des données avec le thread d'acquisition et plot de l'acquisition"""
+
+        self.fast_ax.axes.clear()
+        self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
+        self.canvas_FastAcq.draw()
     
     def fileQuit(self):
         self.close() 
@@ -837,23 +848,25 @@ class Pyro(QtWidgets.QMainWindow):
 
     def FastOneAcquisition(self):
         # Instantie and start un nouveau thread d'acquisition rapide
-        instanced_thread = FastWorkerThread(self)
-        instanced_thread.start()
-
-        if not self.simu:
+        self.instanced_thread = FastWorkerThread()
+        self.instanced_thread.data_plot.connect(self.Update_Fastplot)
+        self.instanced_thread.start()
+        
+        
+        """if not self.simu:
             
             
-            data , temps = OA.run(self.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit)
+            #data , temps = OA.run(self.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit)
             # Appeler la fonction you
-            """OA.you()
+            #OA.you()
             # Utiliser les valeurs
-            print(values)"""           
+                      
             
             
-            self.fast_ax.axes.clear()
-            self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
-            self.canvas_FastAcq.draw()
-
+            #self.fast_ax.axes.clear()
+            #self.fast_ax.plot(self.fast_temps, self.fast_data, color='tab:orange', linewidth=2.0, label='fast one mesure')
+            #self.canvas_FastAcq.draw()
+            
             #self.N7745C.close()
             #self.rm.close()
 
@@ -878,12 +891,9 @@ class Pyro(QtWidgets.QMainWindow):
             self.fast_ax.set_ylabel("Puissance (W)")
             self.fast_ax.grid()
             self.fast_ax.legend()
-            self.canvas_FastAcq.draw()
+            self.canvas_FastAcq.draw()"""
             
-
-    """def get_status(self):
-        Function to query the status
-        return self.N7745C.query(":SENSe2:FUNCtion:STATe?")"""
+    
     
     def closeEvent(self, event):
         print("L'application est fermée")
@@ -1074,26 +1084,32 @@ class ThreadMeasure(QThread):
 
 """---------Partie Thread pour Acquisition rapide Keysight"""
 
-class FastMySignals(QObject):
-    signal_str = pyqtSignal(str)
-    signal_int = pyqtSignal(int)
-
 
 
 class FastWorkerThread(QThread):
-    def __init__(self, parent=None):
-        QThread.__init__(self, parent)
+
+    data_plot = pyqtSignal(list,list)
+        
+    def __init__(self):
+        QThread.__init__(self)
         # Instantiate signals and connect signals to the slots
-        self.signals = FastMySignals()
-        self.signals.signal_str.connect(parent.update_str_field)
-        self.signals.signal_int.connect(parent.update_int_field)
+        
+        """Defining the variables for measurement"""
+        self.par = window.openJson("parameters")
+        self.nbre_pts = self.par["nbre_pts"] 
+        self.Aver_Time = self.par["Ar_Time"]
+        self.unit = self.par["List_Unit"]
+        
 
     def run(self):
+        
         # Do something on the worker thread
-        a = 1 + 1
-        # Emit signals whenever you want
-        self.signals.signal_int.emit(a)
-        self.signals.signal_str.emit("This text comes to Main thread from our Worker thread.")
+       
+        self.returndata , self.returntemps = OA.run(window.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit)
+        
+        # Emission du signal des données"data plot" de la variable returntemps et returndata vers la classe pyro       
+        self.data_plot.emit(list(self.returntemps),list(self.returndata))
+        
 
 
 

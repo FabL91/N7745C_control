@@ -25,7 +25,7 @@ def run(N7745C, NumPhd, nbre_pts, Aver_Time, unit):
         # Increment counter9
         counter += 1    
         
-        time.sleep(0.1)    # Wait for a specified time before querying again (e.g., 1 second)
+        time.sleep(0.25)    # Wait for a specified time before querying again (e.g., 1 second)
                         
         
         # Optionally, print the status to monitor the progress
