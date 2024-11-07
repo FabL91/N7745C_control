@@ -101,7 +101,8 @@ class Pyro(QtWidgets.QMainWindow):
         self.simu = self.ui.check_simu.isChecked()
         
         #Photodiode configuration
-        self.phd_1 = self.ui.Photodiode_1.isChecked()
+        self.ui.Photodiode_1.stateChanged.connect(self.Photodiode_Status)
+        
         self.phd_2 = self.ui.Photodiode_2.isChecked()
         self.phd_3 = self.ui.Photodiode_3.isChecked()
         self.phd_4 = self.ui.Photodiode_4.isChecked()
@@ -232,9 +233,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.id_powermeter = self.ui.id_powermeter.currentText()
         self.par["id_powermeter"] = self.id_powermeter
         self.saveJson(self.par,"parameters") #Sauvegarde dans le fichier Json "parameters"
-        
-
-              
+                  
         
     def boolSimu(self):
         self.simu = self.ui.check_simu.isChecked()
@@ -279,8 +278,17 @@ class Pyro(QtWidgets.QMainWindow):
 
         self.fast_ax.axes.clear()
         self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
-        self.canvas_FastAcq.draw()
+        #self.canvas_FastAcq.draw()
     
+    def Update_Fastplot_2(self, temps, data):
+
+            """Slot des données avec le thread d'acquisition et plot de l'acquisition"""
+
+            #self.fast_ax.axes.clear()
+            self.fast_ax.plot(temps, data, color='tab:green', linewidth=2.0, label='fast one mesure')
+            self.canvas_FastAcq.draw()
+
+
     def fileQuit(self):
         self.close() 
         
@@ -323,6 +331,11 @@ class Pyro(QtWidgets.QMainWindow):
         self.nbre_pts = self.par["nbre_pts"]
         self.Aver_Time = self.par["Ar_Time"]
         self.unit = self.par["List_Unit"]
+        
+        #Intialise des visus des graphes après chargement du fichier config Json
+        self.phd_1 = self.par["Status_phd_1"]
+        self.ui.Photodiode_1.setChecked(self.phd_1)
+        
         
         if self.id_powermeter == "TCPIP0::169.254.241.203::inst0::INSTR":
             self.ui.id_powermeterS.setCurrentIndex(0)
@@ -834,6 +847,13 @@ class Pyro(QtWidgets.QMainWindow):
         self.par["Ar_Time"] = text
         self.saveJson(self.par,"parameters")
 
+    def Photodiode_Status(self):
+        self.phd_1 = self.ui.Photodiode_1.isChecked()
+        self.par = self.openJson("parameters")
+        self.par["Status_phd_1"] = self.phd_1
+        self.saveJson(self.par,"parameters")
+        
+
     def Unit_changed(self, text):
 
         """Update la valeur de "List_Unit 
@@ -848,9 +868,13 @@ class Pyro(QtWidgets.QMainWindow):
 
     def FastOneAcquisition(self):
         # Instantie and start un nouveau thread d'acquisition rapide
+        
         self.instanced_thread = FastWorkerThread()
         self.instanced_thread.data_plot.connect(self.Update_Fastplot)
+        self.instanced_thread.data_plot_2.connect(self.Update_Fastplot_2)
+
         self.instanced_thread.start()
+        
         
         
         """if not self.simu:
@@ -1089,6 +1113,7 @@ class ThreadMeasure(QThread):
 class FastWorkerThread(QThread):
 
     data_plot = pyqtSignal(list,list)
+    data_plot_2 = pyqtSignal(list,list)
         
     def __init__(self):
         QThread.__init__(self)
@@ -1099,16 +1124,22 @@ class FastWorkerThread(QThread):
         self.nbre_pts = self.par["nbre_pts"] 
         self.Aver_Time = self.par["Ar_Time"]
         self.unit = self.par["List_Unit"]
+        self.phd_1 = self.par["Status_phd_1"]
         
 
     def run(self):
         
         # Do something on the worker thread
        
-        self.returndata , self.returntemps = OA.run(window.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit)
+        self.returndata , self.returntemps = OA.run_phd_1(window.N7745C, "1", self.nbre_pts, self.Aver_Time, self.unit, self.phd_1)
+        self.returndata_2 , self.returntemps_2 = OA.run_phd_2(window.N7745C, "2", self.nbre_pts, self.Aver_Time, self.unit, self.phd_1)
         
         # Emission du signal des données"data plot" de la variable returntemps et returndata vers la classe pyro       
         self.data_plot.emit(list(self.returntemps),list(self.returndata))
+        self.data_plot_2.emit(list(self.returntemps_2),list(self.returndata_2))
+        
+
+
         
 
 
