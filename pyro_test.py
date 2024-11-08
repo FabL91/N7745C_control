@@ -272,23 +272,22 @@ class Pyro(QtWidgets.QMainWindow):
     def setValNbMeas(self, val):
         self.ui.valNbMeasure.setText(val) #number of measures
     
-    def Update_Fastplot(self, temps, data, temps_phd_2, data_phd_2):
+    def Update_Fastplot(self, temps, data, data_phd_2, data_phd_3, data_phd_4):
 
         """Slot des données avec le thread d'acquisition et plot de l'acquisition"""
 
         self.fast_ax.axes.clear()
-        self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
-        self.fast_ax.plot(temps_phd_2, data_phd_2, color='tab:blue', linewidth=2.0, label='fast one mesure')
+        if self.phd_1 is True:
+            self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
+        if self.phd_2 is True:
+            self.fast_ax.plot(temps, data_phd_2, color='tab:blue', linewidth=2.0, label='fast one mesure')
+        if self.phd_3 is True:
+            self.fast_ax.plot(temps, data_phd_3, color='tab:green', linewidth=2.0, label='fast one mesure')
+        if self.phd_4 is True:
+            self.fast_ax.plot(temps, data_phd_4, color='tab:purple', linewidth=2.0, label='fast one mesure')
         self.canvas_FastAcq.draw()
-    
-    """def Update_Fastplot_2(self, temps, data):
 
-            Slot des données avec le thread d'acquisition et plot de l'acquisition
-
-            #self.fast_ax.axes.clear()
-            self.fast_ax.plot(temps, data, color='tab:green', linewidth=2.0, label='fast one mesure')
-            self.canvas_FastAcq.draw()"""
-
+           
 
     def fileQuit(self):
         self.close() 
@@ -911,8 +910,6 @@ class Pyro(QtWidgets.QMainWindow):
         self.instanced_thread = FastWorkerThread()
         self.instanced_thread.data_plot.connect(self.Update_Fastplot)
                
-        #self.instanced_thread.data_plot_2.connect(self.Update_Fastplot_2)
-
         self.instanced_thread.start()
         
         
@@ -1153,10 +1150,9 @@ class ThreadMeasure(QThread):
 
 class FastWorkerThread(QThread):
 
-    data_plot = pyqtSignal(list,list,list,list)
+    data_plot = pyqtSignal(list,list,list,list,list)
     
-    
-        
+            
     def __init__(self):
         QThread.__init__(self)
         # Instantiate signals and connect signals to the slots
@@ -1166,10 +1162,10 @@ class FastWorkerThread(QThread):
         self.nbre_pts = self.par["nbre_pts"] 
         self.Aver_Time = self.par["Ar_Time"]
         self.unit = self.par["List_Unit"]
-        self.phd_1 = self.par["Status_phd_1"]
-        self.phd_2 = self.par["Status_phd_2"]
-        self.phd_3 = self.par["Status_phd_3"]
-        self.phd_4 = self.par["Status_phd_4"]
+        #self.phd_1 = self.par["Status_phd_1"]
+        #self.phd_2 = self.par["Status_phd_2"]
+        #self.phd_3 = self.par["Status_phd_3"]
+        #self.phd_4 = self.par["Status_phd_4"]
 
         
 
@@ -1177,11 +1173,12 @@ class FastWorkerThread(QThread):
         
         # Do something on the worker thread
        
-        self.returndata , self.returntemps, self.returndata_phd_2, self.returntemps_phd_2 = OA.run(window.N7745C, "1", self.nbre_pts, self.Aver_Time, self.unit, self.phd_1)
+        self.returndata, self.returntemps, self.returndata_phd_2, self.returndata_phd_3, self.returndata_phd_4 = OA.run(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit)
         
         
         # Emission du signal des données"data plot" de la variable returntemps et returndata vers la classe pyro       
-        self.data_plot.emit(list(self.returntemps),list(self.returndata),list(self.returntemps_phd_2),list(self.returndata_phd_2))
+        self.data_plot.emit(list(self.returntemps),list(self.returndata),
+                            list(self.returndata_phd_2),list(self.returndata_phd_3), list(self.returndata_phd_4))
         
         
 
