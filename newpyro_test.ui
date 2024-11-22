@@ -1426,10 +1426,10 @@ color: rgb(255,255,255)</string>
      <widget class="QPushButton" name="ButtonStartOneFast">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>20</y>
-        <width>161</width>
-        <height>41</height>
+        <x>10</x>
+        <y>310</y>
+        <width>167</width>
+        <height>37</height>
        </rect>
       </property>
       <property name="font">
@@ -1440,7 +1440,7 @@ color: rgb(255,255,255)</string>
        </font>
       </property>
       <property name="text">
-       <string>Start One Fast Mesure</string>
+       <string>Start One Mesure</string>
       </property>
       <property name="default">
        <bool>false</bool>
@@ -1472,7 +1472,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>281</y>
+        <y>211</y>
         <width>81</width>
         <height>21</height>
        </rect>
@@ -1488,7 +1488,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>260</y>
+        <y>190</y>
         <width>61</width>
         <height>16</height>
        </rect>
@@ -1508,7 +1508,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>110</x>
-        <y>281</y>
+        <y>211</y>
         <width>41</width>
         <height>21</height>
        </rect>
@@ -1521,7 +1521,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>110</x>
-        <y>260</y>
+        <y>190</y>
         <width>61</width>
         <height>16</height>
        </rect>
@@ -1541,7 +1541,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>180</x>
-        <y>281</y>
+        <y>211</y>
         <width>51</width>
         <height>21</height>
        </rect>
@@ -1551,7 +1551,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>190</x>
-        <y>260</y>
+        <y>190</y>
         <width>41</width>
         <height>16</height>
        </rect>
@@ -1584,7 +1584,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>120</y>
+        <y>50</y>
         <width>121</width>
         <height>17</height>
        </rect>
@@ -1604,7 +1604,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>150</y>
+        <y>80</y>
         <width>121</width>
         <height>17</height>
        </rect>
@@ -1624,7 +1624,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>180</y>
+        <y>110</y>
         <width>121</width>
         <height>17</height>
        </rect>
@@ -1644,7 +1644,7 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>210</y>
+        <y>140</y>
         <width>121</width>
         <height>17</height>
        </rect>
@@ -1677,13 +1677,72 @@ color: rgb(255,255,255)</string>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>90</y>
+        <y>20</y>
         <width>241</width>
         <height>271</height>
        </rect>
       </property>
       <property name="title">
        <string>Paramètres</string>
+      </property>
+      <widget class="QLineEdit" name="Delay_Read_Buf">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>240</y>
+         <width>51</width>
+         <height>21</height>
+        </rect>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>220</y>
+         <width>131</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Délai lecture Buffer(s)</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QPushButton" name="ButtonStartContFast">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>360</y>
+        <width>167</width>
+        <height>37</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Start Continous Mesure</string>
+      </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
       </property>
      </widget>
      <zorder>groupBox</zorder>
@@ -1701,6 +1760,7 @@ color: rgb(255,255,255)</string>
      <zorder>Photodiode_3</zorder>
      <zorder>Photodiode_4</zorder>
      <zorder>label_2</zorder>
+     <zorder>ButtonStartContFast</zorder>
     </widget>
    </widget>
   </widget>

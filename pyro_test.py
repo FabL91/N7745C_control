@@ -130,6 +130,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.Ar_Time.textEdited.connect(self.AverageTime_changed)
         self.ui.List_Unit.addItems(["S", "MS", "US"])
         self.ui.List_Unit.currentTextChanged.connect(self.Unit_changed)
+        self.ui.Delay_Read_Buf.textEdited.connect(self.Delay_Read_Buffer_changed)
        
 
         #Connecting buttons to their functions and hidding some that are not useful yet
@@ -331,6 +332,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.nbre_pts = self.par["nbre_pts"]
         self.Aver_Time = self.par["Ar_Time"]
         self.unit = self.par["List_Unit"]
+        self.Delay_R_Buf = self.par["Delay_Read_Buf"]
         
         #Intialise des visus des graphes après chargement du fichier config Json
         self.phd_1 = self.par["Status_phd_1"]
@@ -341,8 +343,7 @@ class Pyro(QtWidgets.QMainWindow):
 
         self.phd_3 = self.par["Status_phd_3"]
         self.ui.Photodiode_3.setChecked(self.phd_3)
-        print(self.phd_3)
-
+        
         self.phd_4 = self.par["Status_phd_4"]
         self.ui.Photodiode_4.setChecked(self.phd_4)
 
@@ -361,6 +362,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.nbre_pts.setText(self.par["nbre_pts"])
         self.ui.Ar_Time.setText(self.par["Ar_Time"])
         self.ui.List_Unit.setCurrentText(self.par["List_Unit"])
+        self.ui.Delay_Read_Buf.setText(self.par["Delay_Read_Buf"])
         
         #sample tab
         self.ui.avg_timeS.setText(str(self.par["average_time"]))
@@ -858,6 +860,14 @@ class Pyro(QtWidgets.QMainWindow):
         self.par["Ar_Time"] = text
         self.saveJson(self.par,"parameters")
 
+    def Delay_Read_Buffer_changed(self, text):
+        print(f"Délai buffer dataKeysight changed...{text}")
+        self.par = self.openJson("parameters")
+        self.Delay_R_Buf = text
+        self.par["Delay_Read_Buf"] = text
+        self.saveJson(self.par,"parameters")
+
+
     def Photodiode_Status(self):
 
         self.phd_1 = self.ui.Photodiode_1.isChecked()
@@ -1162,6 +1172,7 @@ class FastWorkerThread(QThread):
         self.nbre_pts = self.par["nbre_pts"] 
         self.Aver_Time = self.par["Ar_Time"]
         self.unit = self.par["List_Unit"]
+        self.Delay_R_Buf = self.par["Delay_Read_Buf"]
         #self.phd_1 = self.par["Status_phd_1"]
         #self.phd_2 = self.par["Status_phd_2"]
         #self.phd_3 = self.par["Status_phd_3"]
@@ -1173,7 +1184,7 @@ class FastWorkerThread(QThread):
         
         # Do something on the worker thread
        
-        self.returndata, self.returntemps, self.returndata_phd_2, self.returndata_phd_3, self.returndata_phd_4 = OA.run(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit)
+        self.returndata, self.returntemps, self.returndata_phd_2, self.returndata_phd_3, self.returndata_phd_4 = OA.run(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit, self.Delay_R_Buf )
         
         
         # Emission du signal des données"data plot" de la variable returntemps et returndata vers la classe pyro       

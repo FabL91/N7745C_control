@@ -3,7 +3,9 @@ import time
 import numpy as np
 """config du powermeter pour une acquisition rapide"""
 
-def run(N7745C, nbre_pts, Aver_Time, unit):
+def run(N7745C, nbre_pts, Aver_Time, unit, Delay_R_Buf):
+
+    Delay_R_Buf = float(Delay_R_Buf)
 
     N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings
 
@@ -82,7 +84,7 @@ def run(N7745C, nbre_pts, Aver_Time, unit):
         # Increment counter9
         counter_phd_4 += 1
         
-        time.sleep(0.50)    # Wait for a specified time before querying again (e.g., 1 second)
+        time.sleep(Delay_R_Buf)    # Wait for a specified time before querying again (e.g., 1 second)
                         
         
         # Optionally, print the status to monitor the progress
@@ -110,25 +112,27 @@ def run(N7745C, nbre_pts, Aver_Time, unit):
     elapsed_time_phd_4 = time.time() - start_time_phd_4
     print(f"Status Phd 4 is COMPLETE. Exiting loop after {counter_phd_4} iterations and {elapsed_time_phd_4:.2f} seconds.")
 
-    time.sleep(0.50)
+    time.sleep(Delay_R_Buf)
 
     data = N7745C.query_binary_values(f":SENSE1:CHANnel:FUNCtion:RESult?",'f',False)
     temps = list(0 + np.arange(int(nbre_pts)) * int(Aver_Time))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
 
-    time.sleep(0.50)
+    time.sleep(Delay_R_Buf)
 
     data_phd_2 = N7745C.query_binary_values(f":SENSE2:CHANnel:FUNCtion:RESult?",'f',False)
     #temps_phd_2 = list(0 + np.arange(int(nbre_pts)) * int(Aver_Time))  # On ajoute 1 à valeur_finale pour inclure la valeur finale
 
-    time.sleep(0.50)
+    time.sleep(Delay_R_Buf)
 
     data_phd_3 = N7745C.query_binary_values(f":SENSE3:CHANnel:FUNCtion:RESult?",'f',False)
     #temps_phd_3 = list(0 + np.arange(int(nbre_pts)) * int(Aver_Time))
 
-    time.sleep(0.50)
+    time.sleep(Delay_R_Buf)
 
     data_phd_4 = N7745C.query_binary_values(f":SENSE4:CHANnel:FUNCtion:RESult?",'f',False)
     #temps_phd_4 = list(0 + np.arange(int(nbre_pts)) * int(Aver_Time))
+
+    print(Delay_R_Buf)
     
     return data, temps, data_phd_2, data_phd_3, data_phd_4
     
