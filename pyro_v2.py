@@ -23,7 +23,11 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize #,QObject
 from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction
 from PyQt5.QtGui import QIcon, QPixmap
 
-
+from matplotlib import use
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 
@@ -32,7 +36,7 @@ import application as app #this is where we send commands to measure the power
 import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
 from newpyro_v2 import Ui_Pyro #Interface file
-from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
+#from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
 
 #Planck's constants
 c1 = 1.1908E-16#W*m2*str-1
@@ -44,7 +48,22 @@ calib_temp_b = -0.5804
 
 color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
       
-     
+class MplCanvas(FigureCanvas):
+    def __init__(self):
+        self.fig = Figure(figsize=(6,4))
+        self.ax = self.fig.add_subplot(111)
+        FigureCanvas.__init__(self, self.fig)
+        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+# Matplotlib widget
+class MplWidget(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)   # Inherit from QWidget
+        self.canvas = MplCanvas()# Create canvas object
+        self.vbl = QtWidgets.QVBoxLayout()         # Set box for plotting
+        self.vbl.addWidget(self.canvas)
+        self.setLayout(self.vbl)     
     
 class Pyro(QtWidgets.QMainWindow):
     def __init__(self):
@@ -66,6 +85,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.plotWidgetDown.canvas.axs[0].set_xlabel("Time (s)")
         self.plotWidgetDown.canvas.axs[0].set_ylabel("Temperature (°C)")
         self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
+        self.plotWidgetDown.canvas.fig.tight_layout(rect=[0, 0, 1, 0.95])  # Leave space for any title
         
         #Connecting buttons to their functions and hidding some that are not useful yet
         self.ui.startButton.clicked.connect(self.startCalib)
@@ -607,7 +627,7 @@ class Pyro(QtWidgets.QMainWindow):
     
     
     def tempEpsEvolution(self,contTimeList,contTempList,contEpsList):
-        plt.tight_layout()
+        plt.tight_layout(rect=[0, 0, 1, 0.95])
         self.plotWidgetDown.canvas.fig.suptitle('Evolution of temperature [°C] and emissivity through time [s]')
         self.plotWidgetDown.canvas.axs[0].scatter(contTimeList, contTempList, label="Temperature [°C]")
         self.plotWidgetDown.canvas.axs[1].scatter(contTimeList, contEpsList, label="Emissivity")
