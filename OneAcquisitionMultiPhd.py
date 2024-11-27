@@ -5,6 +5,8 @@ import numpy as np
 
 def run(N7745C, nbre_pts, Aver_Time, unit, Delay_R_Buf):
 
+
+
     Delay_R_Buf = float(Delay_R_Buf)
 
     N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings

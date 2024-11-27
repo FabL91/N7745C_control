@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1485</width>
+    <width>1768</width>
     <height>979</height>
    </rect>
   </property>
@@ -31,7 +31,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Calibration">
      <property name="autoFillBackground">

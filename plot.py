@@ -17,6 +17,7 @@ def drawLumPower(wavelength, luminance, power):
     
     plt.title("Power = f(Luminance)")
     plt.legend()
+    plt.show()
     print("- - - - - - - - - - - - - - ")
 
 

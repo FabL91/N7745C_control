@@ -19,17 +19,11 @@ import time
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtTest import QTest
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize, QObject
-from PyQt5.QtWidgets import QFileDialog, QWidget, QVBoxLayout, QToolBar, QAction, QLabel
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize #,QObject
+from PyQt5.QtWidgets import QFileDialog, QToolBar, QAction
 from PyQt5.QtGui import QIcon, QPixmap
-from PySide2.QtCore import Slot
 
 
-from matplotlib import use
-import matplotlib.pyplot as plt
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
 
 
@@ -37,14 +31,8 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import application as app #this is where we send commands to measure the power
 import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
-from newpyro_test import Ui_Pyro #Interface file
-#from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
-#import OneAcquisition as OA
-#from OneAcquisition import values
-import OneAcquisitionMultiPhd as OA
-
-
-
+from newpyro_v2 import Ui_Pyro #Interface file
+from mplwidget import MplWidget #Using this to display matplotlib graphs inside QWidgets
 
 #Planck's constants
 c1 = 1.1908E-16#W*m2*str-1
@@ -56,87 +44,32 @@ calib_temp_b = -0.5804
 
 color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
       
- # Ensure using PyQt5 backend
-#plt.use('QT5Agg')
-
-# Matplotlib canvas class to create figure
-class MplCanvas(FigureCanvas):
-    def __init__(self):
-        self.fig = Figure(figsize=(6,4))
-        self.ax = self.fig.add_subplot(111)
-        FigureCanvas.__init__(self, self.fig)
-        FigureCanvas.setSizePolicy(self, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
-
-# Matplotlib widget
-class MplWidget(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        QtWidgets.QWidget.__init__(self, parent)   # Inherit from QWidget
-        self.canvas = MplCanvas()# Create canvas object
-        self.vbl = QtWidgets.QVBoxLayout()         # Set box for plotting
-        self.vbl.addWidget(self.canvas)
-        self.setLayout(self.vbl) 
+     
     
-
-
-
-
-
 class Pyro(QtWidgets.QMainWindow):
     def __init__(self):
         super(Pyro, self).__init__() # Call the inherited classes __init__ method
         #Interface setup
         self.ui = Ui_Pyro()
         self.ui.setupUi(self)
-        self.setWindowTitle("Pyro")
-
-        
-        rm = visa.ResourceManager()
-        rm_list = list(rm.list_resources())
-        rm_list.append("Mode Simulation") 
-
-        self.N7745C = None #à retirer si ce n'est plus en mode simulation
-        self.ui.check_simu.stateChanged.connect(self.boolSimu)
-        self.ui.check_simu.setChecked(False)
-        self.simu = self.ui.check_simu.isChecked()
-        
-        #Photodiode configuration
-        self.ui.Photodiode_1.stateChanged.connect(self.Photodiode_Status)
-        self.ui.Photodiode_2.stateChanged.connect(self.Photodiode_Status_phd2)
-        self.ui.Photodiode_3.stateChanged.connect(self.Photodiode_Status_phd3)
-        self.ui.Photodiode_4.stateChanged.connect(self.Photodiode_Status_phd4)
-
-        
+        self.setWindowTitle("Pyro")        
         #power meter adress
-        self.ui.id_powermeter.addItems(rm_list)
-        self.ui.id_powermeterS.addItems(rm_list)
-
-        self.ui.id_powermeter.currentTextChanged.connect(self.powermeter_change)
-                
+        self.ui.id_powermeter.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
+        self.ui.id_powermeterS.addItem('TCPIP0::169.254.241.203::inst0::INSTR')
         
         #Preparing sample graphs
-        self.plotWidgetUp = MplWidget(self.ui.frameUp)
-        
+        self.plotWidgetUp = MplWidget(self.ui.widgetUp)
         self.plotWidgetDown = MplWidget(self.ui.widgetDown)
-        self.plotWidgetDown.canvas.ax.set_visible(True)
+        self.plotWidgetDown.canvas.ax.set_visible(False)
         self.gs = self.plotWidgetDown.canvas.fig.add_gridspec(2, hspace=0) #For continuous measures, emissivity and temp vs time
         self.plotWidgetDown.canvas.axs = self.gs.subplots(sharex=True)  
         self.plotWidgetDown.canvas.axs[0].set_xlabel("Time (s)")
         self.plotWidgetDown.canvas.axs[0].set_ylabel("Temperature (°C)")
         self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
         
-       #Connecting buttons to their functions and hidding for Fast acquisition
-        self.ui.nbre_pts.textEdited.connect(self.NbrePts_changed)
-        self.ui.Ar_Time.textEdited.connect(self.AverageTime_changed)
-        self.ui.List_Unit.addItems(["S", "MS", "US"])
-        self.ui.List_Unit.currentTextChanged.connect(self.Unit_changed)
-        self.ui.Delay_Read_Buf.textEdited.connect(self.Delay_Read_Buffer_changed)
-       
-
         #Connecting buttons to their functions and hidding some that are not useful yet
         self.ui.startButton.clicked.connect(self.startCalib)
         self.ui.startButtonS.clicked.connect(self.startSample)
-        self.ui.ButtonStartOneFast.clicked.connect(self.FastOneAcquisition)
         self.ui.startContButtonS.clicked.connect(self.startContMode)
         self.ui.okButton.setHidden(True)
         self.ui.labelNbMeasure.setHidden(True)
@@ -149,7 +82,6 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.stopButton.clicked.connect(self.stopContMode)
         self.ui.chooseFolder.clicked.connect(self.folder)
         self.ui.chooseFolderS.clicked.connect(self.folder)
-        self.ui.ConnectButton.clicked.connect(self.connection)
         #adding a toolbar to the top left of the GUI, with 4 buttons : open folder, one time measure, continuous measure and quit
         self.toolbar = QToolBar("Toolbar")
         self.toolbar.setIconSize(QSize(32,32))
@@ -181,67 +113,10 @@ class Pyro(QtWidgets.QMainWindow):
         self.toolstartQuit.setShortcut(Qt.CTRL + Qt.Key_Q) #CTRL + Q to Quit
         
         self.ui.checkBoxBounds.stateChanged.connect(self.boolBounds)#When we check / uncheck the box
-        self.ui.checkBoxBounds.setChecked(False)
         self.ui.checkBoxSigma.stateChanged.connect(self.boolSigma) #it connects to the functions below
-        self.ui.checkBoxSigma.setChecked(False)
-
-        #Graphique de visualisation de la calibration 10/09/2024
-        self.LumPower = self.ui.labelgraphUp
-
-        #Graphique de visualisation de l'acquisition rapide 13/09/2024
-        self.FastAcq = self.ui.GraphAcqFast
-        self.fast_temps = []
-        self.fast_data = []
-
-        # Initialiser Matplotlib
-        self.init_matplotlib()
-
-    def init_matplotlib(self):
-        # Créer une figure Matplotlib
-        #Pour le graphique de la calibration
-
-        self.figure_LumPower = plt.figure(layout='tight')
-        self.canvas_LumPower = FigureCanvas(self.figure_LumPower)
-        toolbar_LumPower = NavigationToolbar(self.canvas_LumPower, self)
-    
-        # Ajouter le canevas au QFrame
-        graph_LumPower = QVBoxLayout()
-        graph_LumPower.addWidget(toolbar_LumPower)
-        graph_LumPower.addWidget(self.canvas_LumPower)
-        self.LumPower.setLayout(graph_LumPower)
-
-        self.LumPower_ax = self.figure_LumPower.add_subplot()
-
-        #Pour le graphique de l'acquisition rapide
-
-        self.figure_FastAcq = plt.figure(layout='tight')
-        self.canvas_FastAcq = FigureCanvas(self.figure_FastAcq)
-        toolbar_FastAcq = NavigationToolbar(self.canvas_FastAcq, self)
-    
-        # Ajouter le canevas au QFrame de l'acquisition
-        graph_FastAcq = QVBoxLayout()
-        graph_FastAcq.addWidget(toolbar_FastAcq)
-        graph_FastAcq.addWidget(self.canvas_FastAcq)
-        self.FastAcq.setLayout(graph_FastAcq)
+        self.bounds = False
+        self.sigma = False
         
-        self.fast_ax = self.figure_FastAcq.add_subplot()
-        
-        
-    def powermeter_change(self):
-
-        """Update la valeur de id_powermeter 
-        et sauvegarde dans le fichier parameters.json"""
-
-        self.par = self.openJson("parameters") # Ouverture du fichier Json "parameters"
-        self.id_powermeter = self.ui.id_powermeter.currentText()
-        self.par["id_powermeter"] = self.id_powermeter
-        self.saveJson(self.par,"parameters") #Sauvegarde dans le fichier Json "parameters"
-                  
-        
-    def boolSimu(self):
-        self.simu = self.ui.check_simu.isChecked()
-        print("Simuler?",self.simu)
-
     def boolBounds(self):
         self.bounds = self.ui.checkBoxBounds.isChecked()
         print("bounds?",self.bounds)
@@ -275,23 +150,7 @@ class Pyro(QtWidgets.QMainWindow):
     def setValNbMeas(self, val):
         self.ui.valNbMeasure.setText(val) #number of measures
     
-    def Update_Fastplot(self, temps, data, data_phd_2, data_phd_3, data_phd_4):
-
-        """Slot des données avec le thread d'acquisition et plot de l'acquisition"""
-
-        self.fast_ax.axes.clear()
-        if self.phd_1 is True:
-            self.fast_ax.plot(temps, data, color='tab:orange', linewidth=2.0, label='fast one mesure')
-        if self.phd_2 is True:
-            self.fast_ax.plot(temps, data_phd_2, color='tab:blue', linewidth=2.0, label='fast one mesure')
-        if self.phd_3 is True:
-            self.fast_ax.plot(temps, data_phd_3, color='tab:green', linewidth=2.0, label='fast one mesure')
-        if self.phd_4 is True:
-            self.fast_ax.plot(temps, data_phd_4, color='tab:purple', linewidth=2.0, label='fast one mesure')
-        self.canvas_FastAcq.draw()
-
-           
-
+    
     def fileQuit(self):
         self.close() 
         
@@ -315,7 +174,6 @@ class Pyro(QtWidgets.QMainWindow):
     def folder(self):
         """chooses the folder where the files will be saved """
         #current directory
-        print("choose folder")
         self.cdir = QFileDialog.getExistingDirectory(self) +'/' #Current directory
         self.ui.labelDir.setText(self.cdir)
         self.ui.labelDirS.setText(self.cdir)
@@ -325,46 +183,15 @@ class Pyro(QtWidgets.QMainWindow):
     def default(self):
         """fills in the labels with the values from the parameters file (parameters.json)"""
         self.par = self.openJson("parameters")
-        print(self.cdir + "parameters")
-        self.id_powermeter = self.par["id_powermeter"]
-        self.ui.id_powermeter.setCurrentText(self.par["id_powermeter"])        
+        print(self.cdir + "parameters")        
         self.temperature = self.par["temperature_ListCel"]
         self.wavelengths = self.par["wavelengths"]
         self.avgTime = self.par["average_time"]
-        self.nbre_pts = self.par["nbre_pts"]
-        self.Aver_Time = self.par["Ar_Time"]
-        self.unit = self.par["List_Unit"]
-        self.Delay_R_Buf = self.par["Delay_Read_Buf"]
         
-        #Intialise des visus des graphes après chargement du fichier config Json
-        self.phd_1 = self.par["Status_phd_1"]
-        self.ui.Photodiode_1.setChecked(self.phd_1)
-
-        self.phd_2 = self.par["Status_phd_2"]
-        self.ui.Photodiode_2.setChecked(self.phd_2)
-
-        self.phd_3 = self.par["Status_phd_3"]
-        self.ui.Photodiode_3.setChecked(self.phd_3)
-        
-        self.phd_4 = self.par["Status_phd_4"]
-        self.ui.Photodiode_4.setChecked(self.phd_4)
-
-        
-        
-        if self.id_powermeter == "TCPIP0::169.254.241.203::inst0::INSTR":
-            self.ui.id_powermeterS.setCurrentIndex(0)
-        else:
-            self.ui.id_powermeterS.setCurrentIndex(1)
-
-               
         #calibration tab        
         self.ui.temperature.setText(str(self.par["temperature_ListCel"]))
         self.ui.wavelength.setText(str(self.par["wavelengths"]))    
         self.ui.avg_time.setText(str(self.par["average_time"]))
-        self.ui.nbre_pts.setText(self.par["nbre_pts"])
-        self.ui.Ar_Time.setText(self.par["Ar_Time"])
-        self.ui.List_Unit.setCurrentText(self.par["List_Unit"])
-        self.ui.Delay_Read_Buf.setText(self.par["Delay_Read_Buf"])
         
         #sample tab
         self.ui.avg_timeS.setText(str(self.par["average_time"]))
@@ -403,55 +230,26 @@ class Pyro(QtWidgets.QMainWindow):
     
     
     def connection(self):
-        
-        if not self.simu:
-            
-            """Connects to the instrument"""
-            self.rm = visa.ResourceManager() #visa connection
-            #self.N7745C = self.rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
-            self.N7745C = self.rm.open_resource(self.id_powermeter)           
-            self.N7745C.timeout = 10000
-            self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
-            #self.N7745C.write(":SYSTem:PRESet") #Sets the insrument to its standard settings
-            #time.sleep(0.25)
-            identification = self.N7745C.query("*IDN?")
-            #self.N7745C.write(":SYSTem:DATE  2024, 9, 30")
-            maintenant = datetime.now()
-            date_actuelle = maintenant.strftime("%Y-%m-%d")
-            heure_actuelle = maintenant.strftime("%H:%M:%S")
-            heures, minutes, secondes = heure_actuelle.split(":")
-
-
-            self.N7745C.write(f":SYSTem:TIME {heures},{minutes},{secondes}")
-            datePow = self.N7745C.query(":SYSTem:DATE?")
-            heurePow = self.N7745C.query(":SYSTem:TIME?")
-            self.ui.textTemperature.setText(f"Identification du powermètre réussi {identification}")
-            print(f"la date est{datePow}")
-            print(f"l'heure est{heurePow}")
-
-                        
-            
-
-            # Afficher les résultats
-            print("L'heure actuelle est :", heure_actuelle)
-            print("La date actuelle est :", date_actuelle)
-            
-            if self.Errorcheck(self.N7745C) == []: #8 channels on the N7745C
-                self.val_run = True
-            
-                #Presets the N7745C and wait for operation complete via the *OPC?, i.e.
-                #the operation complete query.
-                #self.N7745C.write("SYST:PRES;*OPC?")
-                #print("Preset complete, *OPC? returned : " + self.N7745C.read())
-                    
-                """self.N7745C.write(':configure:measurement:setting:preset')#Resets the settings            
-                self.N7745C.write(':sense:power:unit:all Watt')#Sets the sensor power unit of all channels to Watt
-                self.N7745C.write(':sense1:power:gain:auto 1')#auto gain
-                print('\n------------------------\n')"""
-
-        else:
-            print ("mode simulation")
+        """Connects to the instrument"""
+        self.rm = visa.ResourceManager() #visa connection
+        #self.N7745C = self.rm.open_resource('TCPIP0::100.65.4.185::inst0::INSTR')
+        self.N7745C = self.rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
+        self.N7745C.timeout = 10000
+        self.N7745C.write("*CLS")#Clear the event status registers and empty the error queue
+        self.N7745C.write("*IDN?")#Query identification string *IDN?
+        print(self.N7745C.read())
+        if self.Errorcheck(self.N7745C) == []: #8 channels on the N7745C
             self.val_run = True
+        
+            #Presets the N7745C and wait for operation complete via the *OPC?, i.e.
+            #the operation complete query.
+            self.N7745C.write("SYST:PRES;*OPC?")
+            print("Preset complete, *OPC? returned : " + self.N7745C.read())
+                
+            self.N7745C.write(':configure:measurement:setting:preset')#Resets the settings            
+            #self.N7745C.write(':sense:power:unit:all Watt')#Sets the sensor power unit of all channels to Watt
+            #self.N7745C.write(':sense1:power:gain:auto 1')#auto gain
+            print('\n------------------------\n')
             
             
     def initiate(self):
@@ -463,33 +261,24 @@ class Pyro(QtWidgets.QMainWindow):
             #If the wavelength is twice the same, it could be a problem here
             if w <= 1.250:#N7745C only accept as a parameter wavelengths between 1250 and 1650nm
                 #Sets the sensor wavelength and its unit.
-                if self.simu == False:
-                    self.N7745C.write(f'sense{i+1}:power:wavelength {1.250}{wvUnit}')
-                else:
-                    print(f"set wavelength n°{i} to {w}{wvUnit}")
+                self.N7745C.write(f'sense{i+1}:power:wavelength {1.250}{wvUnit}')
+                print(f"set wavelength n°{i} to {w}{wvUnit}")
                 
             elif w >= 1.650:
                 #Sets the sensor wavelength and its unit.
-                if self.simu == False:
-                    self.N7745C.write(f'sense{i+1}:power:wavelength {1.650}{wvUnit}')
-                else:
-                    print(f"set wavelength n°{i} to {w}{wvUnit}")
+                self.N7745C.write(f'sense{i+1}:power:wavelength {1.650}{wvUnit}')
+                print(f"set wavelength n°{i} to {w}{wvUnit}")
                 
             else:       
                 #Sets the sensor wavelength and its unit.
-                if self.simu == False:
-                    self.N7745C.write(f'sense{i+1}:power:wavelength {w}{wvUnit}')
-                else:
-                    print(f"set wavelength n°{i} to {w}{wvUnit}")
+                self.N7745C.write(f'sense{i+1}:power:wavelength {w}{wvUnit}')
+                print(f"set wavelength n°{i} to {w}{wvUnit}")
                 
                 
     def setAveragingTime(self,avg):
         for i in range(len(avg)):#for each averaging time in the list
             a = avg[i]
-            if self.simu == False:
-                self.N7745C.write(f"sense{i+1}:power:atime {a}ms") #in milliseconds
-            else:
-                print(f"sense{i+1}:power:atime {a}ms")
+            self.N7745C.write(f"sense{i+1}:power:atime {a}ms") #in milliseconds
 
     """ End of instrument control functions"""  
          
@@ -543,7 +332,8 @@ class Pyro(QtWidgets.QMainWindow):
         self.calibVariables() #Initializing variables
         self.connection() #connecting to the instrument
         self.initiate() #initiating the instrument
-        self.setAveragingTime(self.avgTime)
+        #self.setAveragingTime(self.avgTime)
+        app.Init_Mesure(window.N7745C)
         self.power_calib_reduced = []
         self.luminance_calib_reduced = []
     
@@ -564,10 +354,11 @@ class Pyro(QtWidgets.QMainWindow):
 
     def calibMain(self):
         print("calibMain")
-        #self.N7745C = None #à retirer si ce n'est plus en mode simulation
         
-        self.returnedpower, self.returnedlum = app.calibration(self.N7745C, self.temperatureListK, self.temperatureListK[self.index], self.returnedpower, self.returnedlum, self.wavelengths)
-
+        self.returnedpower, self.returnedlum = app.calibration(
+            self.N7745C, self.temperatureListK, self.temperatureListK[self.index], 
+            self.returnedpower, self.returnedlum, self.wavelengths)
+       
         self.calibration_data = self.openJson("calibration_data")
         
         self.calibration_data["power_calib"] = self.returnedpower#Writing the power and luminance values in their files
@@ -575,7 +366,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.saveJson(self.calibration_data, "calibration_data")
         self.ui.valPow.setText(str(self.returnedpower))
         self.ui.valLum.setText(str(self.returnedlum))
-                
+        
         self.index += 1
         
         if self.index < self.n:
@@ -585,17 +376,12 @@ class Pyro(QtWidgets.QMainWindow):
         elif self.index == self.n: #When we measured all temperatures
         
             #Plotting and fitting the data
-            #self.figure_LumPower.add_subplot()
-            self.LumPower_ax.axes.clear()
             plot.drawLumPower(self.wavelengths, self.returnedlum, self.returnedpower)
             try : 
                 self.Alist, self.Blist, self.Clist = plot.nonlinearFit(self.wavelengths, self.returnedlum, self.returnedpower, self.cdir)#Applying a nonlinear regression model
             except RuntimeError:
                 print("Not able to fit the curve")
-                                    
-            self.canvas_LumPower.draw()
-            plt.savefig(self.cdir + '/power_lum_calib_axcb.png', dpi=300)
-                            
+                
             #Modifying buttons and labels to be able to reset
             self.ui.textTemperature.setText("")
             self.ui.startButton.setText("Reset")
@@ -613,16 +399,12 @@ class Pyro(QtWidgets.QMainWindow):
             print("\nClist",self.Clist)
             self.saveJson(self.calibration_data, "calibration_data")
             
-            """if self.simu == False:
-                self.N7745C.close() #Closing the link with the instrument
-                self.rm.close()
-            else:"""
-
-            print ("mode simulation calibMain")
+            self.N7745C.close() #Closing the link with the instrument
+            self.rm.close()
             
             #Plotting the graph
-            #self.ui.labelgraphUp.setPixmap(QPixmap(self.cdir + "/power_lum_calib_axcb.png"))
-            #self.ui.labelgraphUp.setScaledContents(True)
+            self.ui.labelgraphUp.setPixmap(QPixmap(self.cdir + "/power_lum_calib_axcb.json"))
+            self.ui.labelgraphUp.setScaledContents(True)
             
     
     def resetCalib(self):        
@@ -668,8 +450,8 @@ class Pyro(QtWidgets.QMainWindow):
         self.getParametersSample()
         self.connection() #connecting to the instrument
         self.initiate() #initiating
-        self.setAveragingTime(self.avgTimeS)
-        
+        #self.setAveragingTime(self.avgTimeS)
+        app.Init_Mesure(window.N7745C)
         self.worker.start() #starting the measurement thread
         self.connectSignals()
         
@@ -695,8 +477,8 @@ class Pyro(QtWidgets.QMainWindow):
         self.sample_values = {}
         self.saveJson(self.sample_values, window.sampleFolder + "continuous_sample_values", 'w+')
    
-        self.setAveragingTime(self.avgTimeS)
-        
+        #self.setAveragingTime(self.avgTimeS)
+        app.Init_Mesure(window.N7745C)
         self.worker.start() #starting the measurement thread
         self.connectSignals()
         
@@ -725,9 +507,8 @@ class Pyro(QtWidgets.QMainWindow):
         #Separating json in dataframes to write it in csv
         #Might be possible to optimize this part
         print(window.sampleFolder + "continuous_sample_values.json")
-        print(window.cdir + window.sampleFolder + "continuous_sample_values.json")
-        #dfsample = pd.read_json(window.sampleFolder + "continuous_sample_values.json")
-        dfsample = pd.read_json(window.cdir + window.sampleFolder + "continuous_sample_values.json")
+
+        """dfsample = pd.read_json(window.sampleFolder + "continuous_sample_values.json")
         contTimeList = pd.DataFrame(dfsample['contTimeList'].tolist()) 
         contTempListCel = pd.DataFrame(dfsample['contTempListCel'].tolist())
         contEpsList = pd.DataFrame(dfsample['contEpsList'].tolist())
@@ -739,7 +520,7 @@ class Pyro(QtWidgets.QMainWindow):
 
         csvdfsample = pd.concat([contTimeList,contTempListCel,contEpsList,contPower,
                                   contLuminanceSample,contLuminanceFit,contResiduals,
-                                  contResidualsPercent], axis=1) #merging dataframes
+                                  contResidualsPercent], axis=1) #merging dataframes"""
 
         self.p = len(self.wavelengths)
         fieldnames = ['contTimeList', 'contTempListCel', 'contEpsList'] #Csv header
@@ -754,7 +535,7 @@ class Pyro(QtWidgets.QMainWindow):
         for i in range(self.p):
             fieldnames.append('Residuals(%)'+str(i+1))
         #converting to csv
-        csvdfsample.to_csv(window.cdir + window.sampleFolder + "continuous_sample_values.csv",index=False,header=fieldnames,sep=';') 
+        """csvdfsample.to_csv(window.sampleFolder + "continuous_sample_values.csv",index=False,header=fieldnames,sep=';') """
         
     
     def drawWvlgthLum(self,wavelength, lum_spl, lum_calib, temperatureListK, initGuessK):
@@ -845,101 +626,7 @@ class Pyro(QtWidgets.QMainWindow):
         
     def clearplotWidgetDown(self):
         self.plotWidgetDown.canvas.ax.clear()
-
-    """Partie du programme Acquisition rapide de la puissance des photodiodes"""
-
-    def NbrePts_changed(self, text):
-        print(f"Nbre de pts changed...{text}")
-        self.par = self.openJson("parameters") # Ouverture du fichier Json "parameters"
-        self.nbre_pts = text
-        self.par["nbre_pts"] = text
-        self.saveJson(self.par,"parameters") #Sauvegarde dans le fichier Json "parameters"
-
-    def AverageTime_changed(self, text):
-        print(f"Temps d'intégration changed...{text}")
-        self.par = self.openJson("parameters")
-        self.Aver_Time = text
-        self.par["Ar_Time"] = text
-        self.saveJson(self.par,"parameters")
-
-    def Delay_Read_Buffer_changed(self, text):
-        print(f"Délai buffer dataKeysight changed...{text}")
-        self.par = self.openJson("parameters")
-        self.Delay_R_Buf = text
-        self.par["Delay_Read_Buf"] = text
-        self.saveJson(self.par,"parameters")
-
-
-    def Photodiode_Status(self):
-
-        self.phd_1 = self.ui.Photodiode_1.isChecked()
-        self.par = self.openJson("parameters")
-        self.par["Status_phd_1"] = self.phd_1
-        self.saveJson(self.par,"parameters")
-
-    def Photodiode_Status_phd2(self):
-        """Update la valeur de "la checkbox photodiode 2" 
-        et sauvegarde dans le fichier parameters.json"""
-
-        self.phd_2 = self.ui.Photodiode_2.isChecked()
-        self.par = self.openJson("parameters")
-        self.par["Status_phd_2"] = self.phd_2
-        self.saveJson(self.par,"parameters")
-
-    def Photodiode_Status_phd3(self):
-        """Update la valeur de "la checkbox photodiode 2" 
-        et sauvegarde dans le fichier parameters.json"""
-
-        self.phd_3 = self.ui.Photodiode_3.isChecked()
-        self.par = self.openJson("parameters")
-        self.par["Status_phd_3"] = self.phd_3
-        self.saveJson(self.par,"parameters") 
-        
-    def Photodiode_Status_phd4(self):
-        """Update la valeur de "la checkbox photodiode 2" 
-        et sauvegarde dans le fichier parameters.json"""
-
-        self.phd_4 = self.ui.Photodiode_4.isChecked()
-        self.par = self.openJson("parameters")
-        self.par["Status_phd_4"] = self.phd_4
-        self.saveJson(self.par,"parameters")
-
-    def Unit_changed(self, text):
-
-        """Update la valeur de "List_Unit 
-        et sauvegarde dans le fichier parameters.json"""
-
-        print(f"Unité changed...{text}")
-        self.par = self.openJson("parameters")
-        self.unit = text
-        self.par["List_Unit"] = text
-        self.saveJson(self.par,"parameters")
     
-
-    def FastOneAcquisition(self):
-        # Instantie and start un nouveau thread d'acquisition rapide
-        
-        self.instanced_thread = FastWorkerThread()
-        self.instanced_thread.data_plot.connect(self.Update_Fastplot)
-               
-        self.instanced_thread.start()
-        
-                   
-    
-    
-    def closeEvent(self, event):
-        print("L'application est fermée")
-        
-        if not self.simu:
-
-            if self.N7745C == None:
-                event.accept()
-            else:
-                self.N7745C.close()
-                self.rm.close()
-        #else:
-
-        event.accept()
     
 class ThreadMeasure(QThread):
     resultPow = pyqtSignal(str) #Creating signals to communicate with the GUI through the thread
@@ -987,7 +674,7 @@ class ThreadMeasure(QThread):
         
         self.nbMeasure = 0
         self.display = True
-        self.simu = None
+        
     
     def sampleMain(self):
         """Starts a parallel thread to run a measurement while modifying the GUI (Graphical User Interface)"""
@@ -995,10 +682,7 @@ class ThreadMeasure(QThread):
         #Stocking the values of wavelength and power        
         
         #Run the main function which reads the power at each photodiode
-        
-        self.power_sample = app.run(window.N7745C, 'sample', self.temperatureListK, self.temperatureListK[0],
-        self.returnedpower, self.returnedlum, window.wavelengths)
-        
+        self.power_sample = app.run(window.N7745C, 'sample', self.temperatureListK, self.temperatureListK[0],self.returnedpower, self.returnedlum, window.wavelengths)
         print("power :",self.power_sample)
         for line in range(self.p):#For each photodiode
             #Calculating the luminance of the sample from its measured power and stocked A and B values
@@ -1092,8 +776,8 @@ class ThreadMeasure(QThread):
                 self.continuousMeasure()
             else:
                 self.continuousMeasure()
-
-                
+            
+            
     def continuousMeasure(self):
         self.sampleMain()
         self.display=False
@@ -1113,49 +797,7 @@ class ThreadMeasure(QThread):
         self.resultTemp.emit(format(self.fit_T, '.1f'))
         self.resultEps.emit(format(self.fit_epsilon, '.4f'))
         self.resultnbMeas.emit(str(self.nbMeasure))
-
-"""---------Partie Thread pour Acquisition rapide Keysight"""
-
-
-
-class FastWorkerThread(QThread):
-
-    data_plot = pyqtSignal(list,list,list,list,list)
     
-            
-    def __init__(self):
-        QThread.__init__(self)
-        # Instantiate signals and connect signals to the slots
-        
-        """Defining the variables for measurement"""
-        self.par = window.openJson("parameters")
-        self.nbre_pts = self.par["nbre_pts"] 
-        self.Aver_Time = self.par["Ar_Time"]
-        self.unit = self.par["List_Unit"]
-        self.Delay_R_Buf = self.par["Delay_Read_Buf"]
-        #self.phd_1 = self.par["Status_phd_1"]
-        #self.phd_2 = self.par["Status_phd_2"]
-        #self.phd_3 = self.par["Status_phd_3"]
-        #self.phd_4 = self.par["Status_phd_4"]
-
-        
-
-    def run(self):
-        
-        # Do something on the worker thread
-       
-        self.returndata, self.returntemps, self.returndata_phd_2, self.returndata_phd_3, self.returndata_phd_4 = OA.run(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit, self.Delay_R_Buf )
-        
-        
-        # Emission du signal des données"data plot" de la variable returntemps et returndata vers la classe pyro       
-        self.data_plot.emit(list(self.returntemps),list(self.returndata),
-                            list(self.returndata_phd_2),list(self.returndata_phd_3), list(self.returndata_phd_4))
-        
-        
-
-
-
-"""Conversion : pyuic5 newpyro_test.ui -o newpyro_test.py"""  
 
 #Creating a window with the application
 if __name__ == "__main__":
@@ -1163,3 +805,6 @@ if __name__ == "__main__":
     window = Pyro() #Creating the GUI
     window.show()
     sys.exit(application.exec_())
+
+
+"""Conversion : pyuic5 newpyro_v2.ui -o newpyro_v2.py"""

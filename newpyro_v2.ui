@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2147</width>
-    <height>1171</height>
+    <width>2455</width>
+    <height>1250</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>2000</width>
-      <height>995</height>
+      <width>2341</width>
+      <height>1231</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -544,367 +544,11 @@ color: rgb(255,255,255)</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1921</width>
-        <height>961</height>
+        <width>2331</width>
+        <height>1201</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="leftLayout">
-       <item row="0" column="1" rowspan="2">
-        <widget class="QGroupBox" name="Graphs">
-         <property name="styleSheet">
-          <string notr="true">background : rgba(0,0,0,100);
-color: rgb(255,255,255)</string>
-         </property>
-         <property name="title">
-          <string>Graphs</string>
-         </property>
-         <widget class="QWidget" name="widgetUp" native="true">
-          <property name="geometry">
-           <rect>
-            <x>70</x>
-            <y>30</y>
-            <width>811</width>
-            <height>451</height>
-           </rect>
-          </property>
-         </widget>
-         <widget class="QWidget" name="widgetDown" native="true">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>70</x>
-            <y>490</y>
-            <width>811</width>
-            <height>451</height>
-           </rect>
-          </property>
-         </widget>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QGroupBox" name="Val">
-         <property name="styleSheet">
-          <string notr="true">background : rgba(0,0,0,100);
-color: rgb(255,255,255)</string>
-         </property>
-         <property name="title">
-          <string>Values</string>
-         </property>
-         <widget class="QLabel" name="labelActTemp">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>580</x>
-            <y>240</y>
-            <width>171</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Actual temperature [°C]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelEm">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>635</x>
-            <y>150</y>
-            <width>81</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)
-</string>
-          </property>
-          <property name="lineWidth">
-           <number>0</number>
-          </property>
-          <property name="text">
-           <string>Emissivity</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelvalPowS">
-          <property name="geometry">
-           <rect>
-            <x>62</x>
-            <y>60</y>
-            <width>81</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="layoutDirection">
-           <enum>Qt::LeftToRight</enum>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Power [W]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelvalResP">
-          <property name="geometry">
-           <rect>
-            <x>55</x>
-            <y>410</y>
-            <width>101</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Residuals [% luminance]</string>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valEps">
-          <property name="geometry">
-           <rect>
-            <x>760</x>
-            <y>140</y>
-            <width>131</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Fitted emissivity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Fitted emissivity</string>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valTemp">
-          <property name="geometry">
-           <rect>
-            <x>760</x>
-            <y>230</y>
-            <width>131</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Fitted temperature&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Fitted temperature</string>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valPowS">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>50</y>
-            <width>371</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Power received by the photodiodes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Power received by the photodiodes</string>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valResidualsP">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>410</y>
-            <width>371</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Measured luminance - fitted luminance (using Planck's law with fitted T and E) in %&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Measured luminance - fitted luminance (using Planck's law with fitted T and E)</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelNbMeasure">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>610</x>
-            <y>330</y>
-            <width>121</width>
-            <height>30</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Times measured</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valNbMeasure">
-          <property name="geometry">
-           <rect>
-            <x>760</x>
-            <y>320</y>
-            <width>131</width>
-            <height>50</height>
-           </rect>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelvalLum_2">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>140</y>
-            <width>151</width>
-            <height>51</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Measured luminance [W.m-2.µm-1.str-1]</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valLuminance">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>140</y>
-            <width>371</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Measured luminance using the A,B &amp;amp; C calibration coefficients &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Measured luminance with the calibration coefficients</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelvalRes">
-          <property name="geometry">
-           <rect>
-            <x>55</x>
-            <y>320</y>
-            <width>101</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Residuals [luminance]</string>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valResiduals">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>320</y>
-            <width>371</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Measured luminance - fitted luminance (using Planck's law with fitted T and E)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Measured luminance - fitted luminance (using Planck's law with fitted T and E)</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="labelvalFitLum">
-          <property name="geometry">
-           <rect>
-            <x>20</x>
-            <y>230</y>
-            <width>151</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background : rgba(255,255,255,0)</string>
-          </property>
-          <property name="text">
-           <string>Fitted luminance [W.m-2.µm-1.str-1]</string>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="wordWrap">
-           <bool>true</bool>
-          </property>
-         </widget>
-         <widget class="QTextBrowser" name="valFitLum">
-          <property name="geometry">
-           <rect>
-            <x>180</x>
-            <y>230</y>
-            <width>371</width>
-            <height>50</height>
-           </rect>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Fitted luminance (using Planck's law with fitted T and E)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="whatsThis">
-           <string>Measured luminance - fitted luminance (using Planck's law with fitted T and E)</string>
-          </property>
-         </widget>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="QGroupBox" name="Param">
          <property name="enabled">
@@ -1464,6 +1108,362 @@ color: rgb(255,255,255)</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="Val">
+         <property name="styleSheet">
+          <string notr="true">background : rgba(0,0,0,100);
+color: rgb(255,255,255)</string>
+         </property>
+         <property name="title">
+          <string>Values</string>
+         </property>
+         <widget class="QLabel" name="labelActTemp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>580</x>
+            <y>240</y>
+            <width>171</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Actual temperature [°C]</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelEm">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>635</x>
+            <y>150</y>
+            <width>81</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)
+</string>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <property name="text">
+           <string>Emissivity</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelvalPowS">
+          <property name="geometry">
+           <rect>
+            <x>62</x>
+            <y>60</y>
+            <width>81</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="layoutDirection">
+           <enum>Qt::LeftToRight</enum>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Power [W]</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelvalResP">
+          <property name="geometry">
+           <rect>
+            <x>55</x>
+            <y>410</y>
+            <width>101</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Residuals [% luminance]</string>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valEps">
+          <property name="geometry">
+           <rect>
+            <x>760</x>
+            <y>140</y>
+            <width>131</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Fitted emissivity&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Fitted emissivity</string>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valTemp">
+          <property name="geometry">
+           <rect>
+            <x>760</x>
+            <y>230</y>
+            <width>131</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Fitted temperature&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Fitted temperature</string>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valPowS">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>50</y>
+            <width>371</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Power received by the photodiodes&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Power received by the photodiodes</string>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valResidualsP">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>410</y>
+            <width>371</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Measured luminance - fitted luminance (using Planck's law with fitted T and E) in %&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Measured luminance - fitted luminance (using Planck's law with fitted T and E)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelNbMeasure">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>610</x>
+            <y>330</y>
+            <width>121</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Times measured</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valNbMeasure">
+          <property name="geometry">
+           <rect>
+            <x>760</x>
+            <y>320</y>
+            <width>131</width>
+            <height>50</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelvalLum_2">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>140</y>
+            <width>151</width>
+            <height>51</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Measured luminance [W.m-2.µm-1.str-1]</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valLuminance">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>140</y>
+            <width>371</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Measured luminance using the A,B &amp;amp; C calibration coefficients &lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Measured luminance with the calibration coefficients</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelvalRes">
+          <property name="geometry">
+           <rect>
+            <x>55</x>
+            <y>320</y>
+            <width>101</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Residuals [luminance]</string>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valResiduals">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>320</y>
+            <width>371</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Measured luminance - fitted luminance (using Planck's law with fitted T and E)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Measured luminance - fitted luminance (using Planck's law with fitted T and E)</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="labelvalFitLum">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>230</y>
+            <width>151</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background : rgba(255,255,255,0)</string>
+          </property>
+          <property name="text">
+           <string>Fitted luminance [W.m-2.µm-1.str-1]</string>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QTextBrowser" name="valFitLum">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>230</y>
+            <width>371</width>
+            <height>50</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#aa55ff;&quot;&gt;Fitted luminance (using Planck's law with fitted T and E)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="whatsThis">
+           <string>Measured luminance - fitted luminance (using Planck's law with fitted T and E)</string>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item row="0" column="1" rowspan="2">
+        <widget class="QGroupBox" name="Graphs">
+         <property name="styleSheet">
+          <string notr="true">background : rgba(0,0,0,100);
+color: rgb(255,255,255)</string>
+         </property>
+         <property name="title">
+          <string>Graphs</string>
+         </property>
+         <widget class="QWidget" name="widgetUp" native="true">
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>20</y>
+            <width>1111</width>
+            <height>561</height>
+           </rect>
+          </property>
+         </widget>
+         <widget class="QWidget" name="widgetDown" native="true">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="geometry">
+           <rect>
+            <x>30</x>
+            <y>590</y>
+            <width>1111</width>
+            <height>591</height>
+           </rect>
           </property>
          </widget>
         </widget>
