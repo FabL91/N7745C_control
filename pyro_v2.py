@@ -87,6 +87,13 @@ class Pyro(QtWidgets.QMainWindow):
         self.plotWidgetDown.canvas.axs[1].set_ylabel("Emissivity")
         self.plotWidgetDown.canvas.fig.tight_layout(rect=[0, 0, 1, 0.95])  # Leave space for any title
         
+        #Connection des bouttons pour l'acquisition rapide
+        self.ui.nbre_pts.textEdited.connect(self.NbrePts_changed)
+        self.ui.Ar_Time.textEdited.connect(self.AverageTime_changed)
+        self.ui.List_Unit.addItems(["S", "MS", "US"])
+        self.ui.List_Unit.currentTextChanged.connect(self.Unit_changed)
+        
+        
         #Connecting buttons to their functions and hidding some that are not useful yet
         self.ui.startButton.clicked.connect(self.startCalib)
         self.ui.startButtonS.clicked.connect(self.startSample)
@@ -207,11 +214,21 @@ class Pyro(QtWidgets.QMainWindow):
         self.temperature = self.par["temperature_ListCel"]
         self.wavelengths = self.par["wavelengths"]
         self.avgTime = self.par["average_time"]
+
+        #intialise les controls de l'acquisition rapide
+        self.nbre_pts = self.par["nbre_pts"]
+        self.Aver_Time = self.par["Ar_Time"]
+        self.unit = self.par["List_Unit"]
         
         #calibration tab        
         self.ui.temperature.setText(str(self.par["temperature_ListCel"]))
         self.ui.wavelength.setText(str(self.par["wavelengths"]))    
         self.ui.avg_time.setText(str(self.par["average_time"]))
+        self.ui.nbre_pts.setText(self.par["nbre_pts"])
+        self.ui.Ar_Time.setText(self.par["Ar_Time"])
+        self.ui.List_Unit.setCurrentText(self.par["List_Unit"])
+
+        
         
         #sample tab
         self.ui.avg_timeS.setText(str(self.par["average_time"]))
@@ -353,7 +370,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.connection() #connecting to the instrument
         self.initiate() #initiating the instrument
         #self.setAveragingTime(self.avgTime)
-        app.Init_Mesure(window.N7745C)
+        app.Init_Mesure(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit)
         self.power_calib_reduced = []
         self.luminance_calib_reduced = []
     
@@ -471,7 +488,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.connection() #connecting to the instrument
         self.initiate() #initiating
         #self.setAveragingTime(self.avgTimeS)
-        app.Init_Mesure(window.N7745C)
+        app.Init_Mesure(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit)
         self.worker.start() #starting the measurement thread
         self.connectSignals()
         
@@ -498,7 +515,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.saveJson(self.sample_values, window.sampleFolder + "continuous_sample_values", 'w+')
    
         #self.setAveragingTime(self.avgTimeS)
-        app.Init_Mesure(window.N7745C)
+        app.Init_Mesure(window.N7745C, self.nbre_pts, self.Aver_Time, self.unit)
         self.worker.start() #starting the measurement thread
         self.connectSignals()
         
@@ -647,6 +664,32 @@ class Pyro(QtWidgets.QMainWindow):
     def clearplotWidgetDown(self):
         self.plotWidgetDown.canvas.ax.clear()
     
+    """Partie du programme Acquisition rapide de la puissance des photodiodes"""
+
+    def NbrePts_changed(self, text):
+        print(f"Nbre de pts changed...{text}")
+        self.par = self.openJson("parameters") # Ouverture du fichier Json "parameters"
+        self.nbre_pts = text
+        self.par["nbre_pts"] = text
+        self.saveJson(self.par,"parameters") #Sauvegarde dans le fichier Json "parameters"
+
+    def AverageTime_changed(self, text):
+        print(f"Temps d'intégration changed...{text}")
+        self.par = self.openJson("parameters")
+        self.Aver_Time = text
+        self.par["Ar_Time"] = text
+        self.saveJson(self.par,"parameters")
+
+    def Unit_changed(self, text):
+
+        """Update la valeur de "List_Unit 
+        et sauvegarde dans le fichier parameters.json"""
+
+        print(f"Unité changed...{text}")
+        self.par = self.openJson("parameters")
+        self.unit = text
+        self.par["List_Unit"] = text
+        self.saveJson(self.par,"parameters")
     
 class ThreadMeasure(QThread):
     resultPow = pyqtSignal(str) #Creating signals to communicate with the GUI through the thread
@@ -687,6 +730,10 @@ class ThreadMeasure(QThread):
         self.initGuessK = [plck.celsiusToKelvin(self.initGuess[0]), self.initGuess[1]] #Converting the Celsius to K
         self.tempLimK = [plck.celsiusToKelvin(t) for t in self.tempLim]
         self.delay = self.par["delay"]
+
+        self.nbre_pts = self.par["nbre_pts"]
+        self.Aver_Time = self.par["Ar_Time"]
+        self.unit = self.par["List_Unit"]
         
         self.contTimeList = []
         self.contEpsList = []
