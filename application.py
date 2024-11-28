@@ -54,38 +54,20 @@ def run(N7745C, state, temperatureListK, temperature, returnedpower, returnedlum
     power = returnedpower
     luminance = returnedlum
     i = temperatureListK.index(temperature)
+
+     # Activation de la mesure
+    Looging_canals(N7745C,1)
+    Looging_canals(N7745C,2)
+    Looging_canals(N7745C,3)
+    Looging_canals(N7745C,4)
     
     
     for j in range(p):  # Photodiode
         w = wavelength[j]  # Valeur de la longueur d'onde actuelle
+        
         time.sleep(0.2)
 
-        # Activation de la mesure
-        N7745C.write(f":SENSe{j + 1}:FUNCtion:STATe LOGG,STAR")
-        
-        # Initialisation des variables pour chaque canal
-        status= N7745C.query(f":SENSe{j + 1}:FUNCtion:STATe?")
-        counter= 0
-        start_time= time.time()
-
-        
-        #Read the power value of the channel
-        #temp_values = N7745C.query_ascii_values('read{}:power?'.format(j + 1))
-           
-        while "COMPLETE" not in status:
-
-            status = N7745C.query(f":SENSe{j + 1}:FUNCtion:STATe?")
-            # Increment counter9
-            counter+= 1
-            time.sleep(0.5)
-
-            elapsed_time = time.time() - start_time
-            print(f"Iteration {counter} de canal {j + 1}: Current status: {status}, Time elapsed: {elapsed_time:.2f} seconds")
-
-                   
-        elapsed_time= time.time() - start_time
-        print(f"Status is COMPLETE de canal {j + 1}. Exiting loop after {counter} iterations and {elapsed_time:.2f} seconds.")
-        
+                
         temp_values = N7745C.query_binary_values(f":SENSE{j + 1}:CHANnel:FUNCtion:RESult?",'f',False)
 
         print(temp_values)
@@ -125,6 +107,32 @@ def calibration(N7745C, temperatureListK, temperature, returnedpower, returnedlu
     #Getting the values of wavelength, power and luminance
     returnedpower, returnedlum = run(N7745C, 'calib', temperatureListK, temperature, returnedpower, returnedlum, wavelength)
     return returnedpower, returnedlum
+
+def Looging_canals(N7745C,Numero_canal):
+
+    N7745C.write(f":SENSe{Numero_canal}:FUNCtion:STATe LOGG,STAR")
+    # Initialisation des variables pour chaque canal
+    status= N7745C.query(f":SENSe{Numero_canal}:FUNCtion:STATe?")
+    counter= 0
+    start_time= time.time()
+    
+    #Read the power value of the channel
+    #temp_values = N7745C.query_ascii_values('read{}:power?'.format(j + 1))
+        
+    while "COMPLETE" not in status:
+
+        status = N7745C.query(f":SENSe{Numero_canal}:FUNCtion:STATe?")
+        # Increment counter9
+        counter+= 1
+        time.sleep(0.2)
+        elapsed_time = time.time() - start_time
+        print(f"Iteration {counter} de canal {Numero_canal}: Current status: {status}, Time elapsed: {elapsed_time:.2f} seconds")
+
+                
+    elapsed_time= time.time() - start_time
+    print(f"Status is COMPLETE de canal {Numero_canal}. Exiting loop after {counter} iterations and {elapsed_time:.2f} seconds.")
+    
+
 
 
 """def run(N7745C, state, temperatureListK, temperature, returnedpower, returnedlum, wavelength):
