@@ -1,8 +1,12 @@
 #importing files
+import logging
 import plck
 import time
 #This program connects to a N7745C and takes a power reading at the specified wavelength.
 #One wavelength per channel
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(asctime)s %(message)s', filename='Logging_Mesure.log', level=logging.INFO)
 
 def Init_Mesure(N7745C, nbre_pts, Aver_Time, unit):
 
@@ -49,12 +53,12 @@ def Init_Mesure(N7745C, nbre_pts, Aver_Time, unit):
 
     print("fin Initialisation des mesures")
 
-def run(N7745C, state, temperatureListK, temperature, returnedpower, returnedlum, wavelength):
+def run(N7745C, Delay_R_Buf, state, temperatureListK, temperature, returnedpower, returnedlum, wavelength):
     p = len(wavelength)
     power = returnedpower
     luminance = returnedlum
     i = temperatureListK.index(temperature)
-
+    Delay_R_Buf = float(Delay_R_Buf)
      # Activation de la mesure
     Looging_canals(N7745C,1)
     Looging_canals(N7745C,2)
@@ -65,10 +69,11 @@ def run(N7745C, state, temperatureListK, temperature, returnedpower, returnedlum
     for j in range(p):  # Photodiode
         w = wavelength[j]  # Valeur de la longueur d'onde actuelle
         
-        time.sleep(0.2)
+        time.sleep(Delay_R_Buf)
 
                 
         temp_values = N7745C.query_binary_values(f":SENSE{j + 1}:CHANnel:FUNCtion:RESult?",'f',False)
+        logger.info(f"début lecture Buffer canal:{j + 1}")
 
         print(temp_values)
 
@@ -101,17 +106,18 @@ Luminance and Power matrices are defined like this :
      1 ------------ i --------------> n (Temperature)
 '''
 
-def calibration(N7745C, temperatureListK, temperature, returnedpower, returnedlum,
+def calibration(N7745C, Delay_R_Buf, temperatureListK, temperature, returnedpower, returnedlum,
                 wavelength):
                     
     #Getting the values of wavelength, power and luminance
-    returnedpower, returnedlum = run(N7745C, 'calib', temperatureListK, temperature, returnedpower, returnedlum, wavelength)
+    returnedpower, returnedlum = run(N7745C, Delay_R_Buf, 'calib', temperatureListK, temperature, returnedpower, returnedlum, wavelength)
     return returnedpower, returnedlum
 
 def Looging_canals(N7745C,Numero_canal):
 
     N7745C.write(f":SENSe{Numero_canal}:FUNCtion:STATe LOGG,STAR")
-    # Initialisation des variables pour chaque canal
+    logger.info(f"Starting logging for channel {Numero_canal}")  # Initialisation des variables pour chaque canal
+    
     status= N7745C.query(f":SENSe{Numero_canal}:FUNCtion:STATe?")
     counter= 0
     start_time= time.time()

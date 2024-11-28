@@ -92,6 +92,7 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.Ar_Time.textEdited.connect(self.AverageTime_changed)
         self.ui.List_Unit.addItems(["S", "MS", "US"])
         self.ui.List_Unit.currentTextChanged.connect(self.Unit_changed)
+        self.ui.Delay_Read_Buf.textEdited.connect(self.Delay_Read_Buffer_changed)
         
         
         #Connecting buttons to their functions and hidding some that are not useful yet
@@ -227,6 +228,8 @@ class Pyro(QtWidgets.QMainWindow):
         self.ui.nbre_pts.setText(self.par["nbre_pts"])
         self.ui.Ar_Time.setText(self.par["Ar_Time"])
         self.ui.List_Unit.setCurrentText(self.par["List_Unit"])
+        self.Delay_R_Buf = self.par["Delay_Read_Buf"]
+        self.ui.Delay_Read_Buf.setText(self.par["Delay_Read_Buf"])
 
         
         
@@ -690,6 +693,13 @@ class Pyro(QtWidgets.QMainWindow):
         self.unit = text
         self.par["List_Unit"] = text
         self.saveJson(self.par,"parameters")
+
+    def Delay_Read_Buffer_changed(self, text):
+        print(f"Délai buffer dataKeysight changed...{text}")
+        self.par = self.openJson("parameters")
+        self.Delay_R_Buf = text
+        self.par["Delay_Read_Buf"] = text
+        self.saveJson(self.par,"parameters")
     
 class ThreadMeasure(QThread):
     resultPow = pyqtSignal(str) #Creating signals to communicate with the GUI through the thread
@@ -734,6 +744,7 @@ class ThreadMeasure(QThread):
         self.nbre_pts = self.par["nbre_pts"]
         self.Aver_Time = self.par["Ar_Time"]
         self.unit = self.par["List_Unit"]
+        self.Delay_R_Buf = self.par["Delay_Read_Buf"]
         
         self.contTimeList = []
         self.contEpsList = []
@@ -749,7 +760,7 @@ class ThreadMeasure(QThread):
         #Stocking the values of wavelength and power        
         
         #Run the main function which reads the power at each photodiode
-        self.power_sample = app.run(window.N7745C, 'sample', self.temperatureListK, self.temperatureListK[0],self.returnedpower, self.returnedlum, window.wavelengths)
+        self.power_sample = app.run(window.N7745C, self.Delay_R_Buf, 'sample', self.temperatureListK, self.temperatureListK[0],self.returnedpower, self.returnedlum, window.wavelengths)
         print("power :",self.power_sample)
         for line in range(self.p):#For each photodiode
             #Calculating the luminance of the sample from its measured power and stocked A and B values
