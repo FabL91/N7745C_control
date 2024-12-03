@@ -16,6 +16,7 @@ import pyvisa as visa
 from scipy.optimize import curve_fit
 import sys
 import time
+import os
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtTest import QTest
@@ -29,7 +30,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-
+import logging
 
 #importing files
 import application as app #this is where we send commands to measure the power
@@ -47,7 +48,10 @@ calib_temp_a = 0.9884
 calib_temp_b = -0.5804
 
 color_list = ['#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#bcbd22']
-      
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(asctime)s %(message)s', filename='Logging_Pyro.log', level=logging.INFO)
+
 class MplCanvas(FigureCanvas):
     def __init__(self):
         self.fig = Figure(figsize=(6,4))
@@ -760,8 +764,11 @@ class ThreadMeasure(QThread):
         #Stocking the values of wavelength and power        
         
         #Run the main function which reads the power at each photodiode
-        self.power_sample = app.run(window.N7745C, self.Delay_R_Buf, 'sample', self.temperatureListK, self.temperatureListK[0],self.returnedpower, self.returnedlum, window.wavelengths)
+        self.power_sample, self.all_temp_values = app.run(window.N7745C, self.Delay_R_Buf, 'sample', self.temperatureListK, self.temperatureListK[0],self.returnedpower, self.returnedlum, window.wavelengths)
         print("power :",self.power_sample)
+        print("all_temp_values :",self.all_temp_values)
+        #logger.info(f"all_power :{self.all_temp_values}")
+
         for line in range(self.p):#For each photodiode
             #Calculating the luminance of the sample from its measured power and stocked A and B values
             self.luminance_sample[line] = pow((self.power_sample[line] - float(self.Blist[line])) / float(self.Alist[line]), 1/float(self.Clist[line]))
@@ -794,7 +801,7 @@ class ThreadMeasure(QThread):
             self.power_sample_reduced.append(float(f"{self.power_sample[i]:.3e}"))
             
         
-    def saveOneValue(self):
+    """def saveOneValue(self):
         #Adding the values to the lists
         self.sample_values = {}
         self.sample_values["power_sample"] = self.power_sample
@@ -805,15 +812,56 @@ class ThreadMeasure(QThread):
         self.sample_values["temperature"] = self.fit_T
         self.sample_values["epsilon"] = self.fit_epsilon 
         self.sample_values["timeSample"] = window.t0
+        self.sample_values["all_power_sample"] = self.all_temp_values
+
+        #Saving the values into the file         
         
         window.saveJson(self.sample_values, "sample_values" + window.t0, 'w+')
         dfOnesample = pd.read_json(window.cdir + "sample_values" + window.t0 + ".json") #Separating json in dataframes
-        fieldnames = ['power_sample', 'lum_sample', 'lum_fit','residuals','residuals_%','temperature','epsilon','timeSample'] # csv header
+        fieldnames = ['power_sample', 'lum_sample', 'lum_fit','residuals','residuals_%','temperature','epsilon','timeSample','all_power_sample'] # csv header
         
-        dfOnesample.to_csv(window.cdir + "sample_values" + window.t0 + ".csv",index=False,header=fieldnames,sep=';') #converting to csv
-        
+        dfOnesample.to_csv(window.cdir + "sample_values" + window.t0 + ".csv",index=False,header=fieldnames,sep=';') #converting to csv"""
+    def saveOneValue(self):
+        # Adding the values to the lists
+        self.sample_values = {}
+        self.sample_values["power_sample"] = self.power_sample
+        self.sample_values["lum_sample"] = self.luminance_sample
+        self.sample_values["lum_fit"] = self.luminance_fit
+        self.sample_values["residuals"] = self.residuals
+        self.sample_values["residuals_%"] = self.residualspercent        
+        self.sample_values["temperature"] = self.fit_T
+        self.sample_values["epsilon"] = self.fit_epsilon 
+        self.sample_values["timeSample"] = window.t0
+        self.sample_values["all_power_sample"] = self.all_temp_values
+
+        # Convert self.all_temp_values to a DataFrame for better handling
+        all_temp_values_df = pd.DataFrame(self.all_temp_values).transpose()
+        all_temp_values_df.columns = [f"all_power_sample_{i+1}" for i in range(all_temp_values_df.shape[1])]
+
+        # Save the main values into a JSON file
+        window.saveJson(self.sample_values, "sample_values" + window.t0, 'w+')
+
+        # Load the saved JSON for consistency
+        dfOnesample = pd.read_json(window.cdir + "sample_values" + window.t0 + ".json")  # Separating JSON into a DataFrame
+
+        # Merge all_temp_values_df with the other data
+        dfOnesample = pd.concat([dfOnesample, all_temp_values_df], axis=1)
+
+        # Generate fieldnames dynamically
+        fieldnames = list(self.sample_values.keys()) + list(all_temp_values_df.columns)
+
+        # Save as CSV
+        dfOnesample.to_csv(
+            window.cdir + "sample_values" + window.t0 + ".csv",
+            index=False,
+            header=fieldnames,
+            sep=';'
+        )
+
+
         
     def saveContValues(self):
+        
         self.sample_values = window.openJson(window.sampleFolder + "continuous_sample_values")
         #Saving the values into the file
         self.sample_values["nbMeasure"]=self.nbMeasure
@@ -826,8 +874,10 @@ class ThreadMeasure(QThread):
         self.sample_values["contLuminanceFit"].append(self.luminance_fit)
         self.sample_values["contResiduals"].append(self.residuals)
         self.sample_values["contResidualsPercent"].append(self.residualspercent)
+        
     
         window.saveJson(self.sample_values, window.sampleFolder + "continuous_sample_values", 'w+')
+        
         
         self.contTimeList = self.sample_values["contTimeList"]
         self.contEpsList = self.sample_values["contEpsList"]
@@ -862,9 +912,23 @@ class ThreadMeasure(QThread):
         self.fitting()            
         self.signalEmit()            
         print("nb measure:",self.nbMeasure)                
-        self.saveContValues()                
+        self.saveContValues()
+        self.AllMeasure()                
         self.nbMeasure += 1  
     
+    def AllMeasure(self):
+
+        file_index = 1
+        while os.path.exists(f'all_temp_values_{file_index}.json'):
+            file_index += 1
+        
+        # Créer un dictionnaire avec la structure souhaitée
+        formatted_data = {}
+        for i, sublist in enumerate(self.all_temp_values, 1):
+            formatted_data[f'canal{i}'] = sublist
+        
+        with open(f'all_temp_values_{file_index}.json', 'w') as json_file:
+            json.dump(formatted_data, json_file)
     
     def signalEmit(self):
         self.resultPow.emit(str(self.power_sample_reduced))

@@ -64,18 +64,18 @@ def run(N7745C, Delay_R_Buf, state, temperatureListK, temperature, returnedpower
     Looging_canals(N7745C,2)
     Looging_canals(N7745C,3)
     Looging_canals(N7745C,4)
-    
+    all_temp_values = []  # Liste pour stocker toutes les valeurs de temp_values
     
     for j in range(p):  # Photodiode
         w = wavelength[j]  # Valeur de la longueur d'onde actuelle
         
-        time.sleep(Delay_R_Buf)
+                        
+        temp_values = N7745C.query_binary_values(f":SENSE{j + 1}:CHANnel:FUNCtion:RESult?",'f',False)
 
                 
-        temp_values = N7745C.query_binary_values(f":SENSE{j + 1}:CHANnel:FUNCtion:RESult?",'f',False)
         logger.info(f"début lecture Buffer canal:{j + 1}")
 
-        print(temp_values)
+        #print(temp_values)
 
         if state == 'calib':     #rajouter condition sur calib ou sample
             power[j][i] = temp_values[0]
@@ -83,15 +83,17 @@ def run(N7745C, Delay_R_Buf, state, temperatureListK, temperature, returnedpower
             
         elif state =='sample':
             power[j] = temp_values[0]
-
+            
         N7745C.write(f":SENSe{j + 1}:FUNCtion:STATe LOGG,STOP")
+        all_temp_values.append(temp_values)
+        time.sleep(Delay_R_Buf)
 
        
     if state == 'calib':
         return power, luminance
     
     else: #we do not return luminance for the sample measurement
-        return power
+        return power, all_temp_values
    
 '''    
 Luminance and Power matrices are defined like this :
