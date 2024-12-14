@@ -900,7 +900,8 @@ class ThreadMeasure(QThread):
         
         while self.running: #If we haven't pressed the stop button, the measurement keeps going
             if self.delay!=0 or self.delay!=None: #If there is a delay
-                QTest.qWait(self.delay*1000)
+                #QTest.qWait(self.delay*1000)
+                QTest.qWait(self.delay)
                 self.continuousMeasure()
             else:
                 self.continuousMeasure()

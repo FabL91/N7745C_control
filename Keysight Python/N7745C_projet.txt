@@ -1,0 +1,30 @@
+Modifie le code du fichier N7745C Continous logging_loop.py:
+
+-Création d'un fichier .ui pour la création d'une interface utilisateur avec Pyqt5.
+-Sur l'interface ajouter un bouton start et un bouton stop.
+
+Le bouton Start démarre ce code qui doit être mis dans une boucle while:
+
+N7745C.write(":SENSe2:FUNCtion:STATe LOGG,STAR")#Enables/Disables the logging
+data_1 = 0
+    
+while data_1 == 0:
+    # Code à exécuter dans la boucle
+    
+    print(f"La valeur de data est toujours {data_1}")
+    # Modifier data pour éventuellement sortir de la boucle
+    data_1 = N7745C.query(":SENS2:FUNC:RES:IND?")
+    
+
+time.sleep(0.1)
+
+data = N7745C.query_binary_values(':SENSE2:CHANnel:FUNCtion:RESult?','f',False)
+print(data)
+print(len(data))
+print(data_1)
+
+Le bouton stop arrête la boucle while.
+
+-Créer un graphe matplotlib pour visualiser les données de la variable data
+-Créer 2 widgets lineEdit (nbre de pts et temps d'intégration) pour mettre en variable 10, 10 
+de cette ligne de code : N7745C.write(":SENSe2:FUNCtion:PARameter:LOGGing 10,10 MS")

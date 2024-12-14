@@ -60,10 +60,20 @@ def run(N7745C, Delay_R_Buf, state, temperatureListK, temperature, returnedpower
     i = temperatureListK.index(temperature)
     Delay_R_Buf = float(Delay_R_Buf)
      # Activation de la mesure
+    N7745C.write(f":SENSe1:FUNCtion:STATe LOGG,STAR")
+    logger.info(f"Starting logging for channel 1")  # Initialisation des variables pour chaque canal
+    N7745C.write(f":SENSe2:FUNCtion:STATe LOGG,STAR")
+    logger.info(f"Starting logging for channel 2")  # Initialisation des variables pour chaque canal
+    N7745C.write(f":SENSe3:FUNCtion:STATe LOGG,STAR")
+    logger.info(f"Starting logging for channel 3")  # Initialisation des variables pour chaque canal
+    N7745C.write(f":SENSe4:FUNCtion:STATe LOGG,STAR")
+    logger.info(f"Starting logging for channel 4")  # Initialisation des variables pour chaque canal
+
     Looging_canals(N7745C,1)
     Looging_canals(N7745C,2)
     Looging_canals(N7745C,3)
     Looging_canals(N7745C,4)
+
     all_temp_values = []  # Liste pour stocker toutes les valeurs de temp_values
     
     for j in range(p):  # Photodiode
@@ -117,8 +127,8 @@ def calibration(N7745C, Delay_R_Buf, temperatureListK, temperature, returnedpowe
 
 def Looging_canals(N7745C,Numero_canal):
 
-    N7745C.write(f":SENSe{Numero_canal}:FUNCtion:STATe LOGG,STAR")
-    logger.info(f"Starting logging for channel {Numero_canal}")  # Initialisation des variables pour chaque canal
+    #N7745C.write(f":SENSe{Numero_canal}:FUNCtion:STATe LOGG,STAR")
+    #logger.info(f"Starting logging for channel {Numero_canal}")  # Initialisation des variables pour chaque canal
     
     status= N7745C.query(f":SENSe{Numero_canal}:FUNCtion:STATe?")
     counter= 0
