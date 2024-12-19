@@ -33,7 +33,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 import logging
 
 #importing files
-import application as app #this is where we send commands to measure the power
+import application_v2 as app #this is where we send commands to measure the power
 import plck #planck's equations and a few conversions
 import plot #functions that plots or fits
 from newpyro_v2 import Ui_Pyro #Interface file
@@ -920,16 +920,12 @@ class ThreadMeasure(QThread):
     def AllMeasure(self):
 
         file_index = 1
-        while os.path.exists(f'all_temp_values_{file_index}.json'):
+        while os.path.exists(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".json"):
             file_index += 1
         
-        # Créer un dictionnaire avec la structure souhaitée
-        formatted_data = {}
-        for i, sublist in enumerate(self.all_temp_values, 1):
-            formatted_data[f'canal{i}'] = sublist
-        
-        with open(f'all_temp_values_{file_index}.json', 'w') as json_file:
-            json.dump(formatted_data, json_file)
+                
+        with open(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".json", 'w') as json_file:
+            json.dump(self.all_temp_values, json_file)
     
     def signalEmit(self):
         self.resultPow.emit(str(self.power_sample_reduced))

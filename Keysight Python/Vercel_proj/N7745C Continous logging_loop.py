@@ -3,16 +3,16 @@ import time
 import numpy as np
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
-from PyQt5.QtWidgets import QProgressBar
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.widgets import Cursor
 import pyvisa
 from collections import deque
+from progress_widget import ProgressWidget
 
 class LoggingThread(QThread):
     data_ready = pyqtSignal(list)
-    progress_update = pyqtSignal(int)
+    start_progress = pyqtSignal(float)  # Signal to start progress with sleep_time
 
     def __init__(self, n7745c, points, integration_time, time_unit, loop_delay, parent=None):
         super().__init__(parent)
@@ -27,13 +27,10 @@ class LoggingThread(QThread):
     def calculate_sleep_time(self):
         if self.time_unit == "US":
             self.sleep_time = (self.points * self.integration_time) / 1_000_000  # Convert to seconds
-            self.time_int = self.integration_time/1_000_000
         elif self.time_unit == "MS":
             self.sleep_time = (self.points * self.integration_time) / 1000  # Convert to seconds
-            self.time_int = self.integration_time/1000
         else:  # "S"
             self.sleep_time = self.points * self.integration_time
-            self.time_int = self.integration_time
 
     def run(self):
         self.running = True
@@ -44,28 +41,22 @@ class LoggingThread(QThread):
             time.sleep(self.loop_delay)
             
             while data_1 == 0 and self.running:
-                print(f"La valeur de data est toujours {data_1}")
-                                
-                data_1 = self.n7745c.query(":SENS2:FUNC:RES:IND?")
-                
-                        
-            if self.running:
-                #time.sleep(0.2)
-                progress = 0
-                for i in range(self.points):
-                    progress = (100/self.points)*(i+1)
-                    
-                    self.progress_update.emit(progress)
-                    time.sleep(self.time_int)
-                    print (self.time_int)
 
+                #data_1 = self.n7745c.query(":SENS2:FUNC:RES:IND?")
+                data_1 = self.n7745c.query("*OPC?")
+
+            time.sleep(self.sleep_time)
+            if self.running:
+                # Emit signal to start progress bar with current sleep_time
+                self.start_progress.emit(self.sleep_time)
+                # Sleep for a short time to avoid excessive CPU usage
+                
                 data = self.n7745c.query_binary_values(':SENSE2:CHANnel:FUNCtion:RESult?', 'f', False)
                 print(data)
                 print(len(data))
-                print(data_1)
+                print(f"La valeur de data est toujours {data_1}")
                 self.data_ready.emit(data)
-                                
-        
+
         self.n7745c.write(":SENSe2:FUNCtion:STATe LOGG,STOP")  # Disables the logging
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -75,34 +66,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Initialize VISA resource
         rm = pyvisa.ResourceManager()
-
         self.n7745c = rm.open_resource('TCPIP0::169.254.241.203::inst0::INSTR')
 
-        self.n7745c.write(":SENSe2:FUNCtion:STATe LOGG,STOP") #Enables/Disables the logging, MinMax, or stability data acquisition function mode
-        self.n7745c.write(":SENSe2:POWer:GAIN:AUTO 0") #Set the Auto Gain
-        self.n7745c.write(":SENSe2:POWer:RANGe:AUTO 0") #Enables or disables automatic power ranging for the slot
-        self.n7745c.write(":SENSe2:POWer:RANGe:UPPer -10 DBM") #Sets the power range for the module.
-        self.n7745c.write(":SENSe2:POWer:UNIT 1") #Sets the sensor power unit 
-        self.n7745c.write(":SENSe2:POWer:WAVelength 1552NM")#Sets the sensor wavelength.
-        self.n7745c.write(":TRIGger2:INPut IGN")#Sets the incoming trigger response and arms the slot
-
-
-        self.n7745c.write(":SENSe2:FUNCtion:LOOP 0")
-
-
-
         # Initialize data storage for the scrolling plot
-        self.time_data = deque(maxlen=100)  # Store the last 100 time points
-        self.first_point_data = deque(maxlen=100)  # Store the last 100 values of the first point
+        self.time_data = deque(maxlen=100)
+        self.first_point_data = deque(maxlen=100)
         self.update_timer = QTimer(self)
         self.update_timer.timeout.connect(self.update_second_graph)
-        self.update_timer.start(50)  # 500 ms = 0.5 seconds
+        self.update_timer.start(1)
         self.pending_data = None
         self.current_data = []
 
     def initUI(self):
         self.setWindowTitle("N7745C Continuous Logging")
-        self.setGeometry(100, 100, 800, 800)  # Increased height to accommodate the second graph
+        self.setGeometry(100, 100, 800, 800)
 
         layout = QtWidgets.QVBoxLayout()
 
@@ -145,9 +122,9 @@ class MainWindow(QtWidgets.QMainWindow):
         cursor_layout.addWidget(self.cursor_y_edit)
         layout.addLayout(cursor_layout)
 
-        # Progress bar
-        self.progressBar = QProgressBar(self)
-        layout.addWidget(self.progressBar)
+        # Custom Progress Widget
+        self.progress_widget = ProgressWidget()
+        layout.addWidget(self.progress_widget)
 
         # Matplotlib figures
         self.figure1, self.ax1 = plt.subplots()
@@ -182,8 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.logging_thread = LoggingThread(self.n7745c, points, integration_time, time_unit, loop_delay)
         self.logging_thread.data_ready.connect(self.update_plot)
-        self.progressBar.setValue(0)
-        self.logging_thread.progress_update.connect(self.update_progress_bar)
+        self.logging_thread.start_progress.connect(self.start_progress_bar)
         self.logging_thread.start()
         self.startButton.setEnabled(False)
         self.stopButton.setEnabled(True)
@@ -191,7 +167,12 @@ class MainWindow(QtWidgets.QMainWindow):
         # Reset the data storage for the scrolling plot
         self.time_data.clear()
         self.first_point_data.clear()
-        self.update_timer.start(1)
+        self.update_timer.start(10)
+
+    def start_progress_bar(self, sleep_time):
+        # Convert sleep_time to milliseconds for the progress widget
+        delay_ms = int(sleep_time * 1000)
+        self.progress_widget.start_progress(delay_ms)
 
     def stop_logging(self):
         self.logging_thread.running = False
@@ -231,9 +212,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.pending_data = None
 
-    def update_progress_bar(self, value):
-        self.progressBar.setValue(value)
-
     def closeEvent(self, event):
         self.stop_logging()
         self.n7745c.close()
@@ -244,4 +222,3 @@ if __name__ == '__main__':
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
-
