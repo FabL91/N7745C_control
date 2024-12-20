@@ -917,7 +917,7 @@ class ThreadMeasure(QThread):
         self.AllMeasure()                
         self.nbMeasure += 1  
     
-    def AllMeasure(self):
+    """def AllMeasure(self):
 
         file_index = 1
         while os.path.exists(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".json"):
@@ -925,7 +925,40 @@ class ThreadMeasure(QThread):
         
                 
         with open(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".json", 'w') as json_file:
-            json.dump(self.all_temp_values, json_file)
+            json.dump(self.all_temp_values, json_file)"""
+
+    def AllMeasure(self):
+        """
+        Save all temperature values in columns in a JSON file.
+        Each column represents a photodiode's measurements.
+        """
+        # Create a dictionary to store the data in columns
+        columns_data = {}
+        
+        # Get the number of photodiodes (columns)
+        num_photodiodes = len(self.all_temp_values[0])
+        
+        # Initialize lists for each column
+        for i in range(num_photodiodes):
+            columns_data[f'photodiode_{i+1}'] = []
+        
+        # Populate the columns with data
+        for row in self.all_temp_values:
+            for i, value in enumerate(row):
+                columns_data[f'photodiode_{i+1}'].append(value)
+        
+        # Generate unique filename with timestamp
+        file_index = 1
+        while os.path.exists(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".json"):
+            file_index += 1
+        
+        # Save the columnar data to JSON
+        with open(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".json", 'w') as json_file:
+            json.dump(columns_data, json_file, indent=2)
+        
+        # Also save as CSV for easier data analysis
+        df = pd.DataFrame(columns_data)
+        df.to_csv(window.cdir + f"all_temp_values_{file_index}"+ window.t0 +".csv", index=False)
     
     def signalEmit(self):
         self.resultPow.emit(str(self.power_sample_reduced))
