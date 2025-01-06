@@ -95,6 +95,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_1">
+          <property name="text">
+           <string>Label 1</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QSlider" name="horizontalSlider_2">
           <property name="maximumSize">
            <size>
@@ -104,6 +111,13 @@
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Label 2</string>
           </property>
          </widget>
         </item>

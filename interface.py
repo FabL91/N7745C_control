@@ -19,7 +19,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('interface.ui', self)
     
     def setupUi(self, MainWindow): 
-        
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(466, 402)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -44,11 +44,22 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.horizontalLayout.setContentsMargins(1, 1, 1, 1)
         self.horizontalLayout.setObjectName("horizontalLayout")
+
+        self.label1 = QtWidgets.QLabel(self.centralwidget)
+        self.label1.setText("Slider 1:")
+        self.horizontalLayout.addWidget(self.label1)
+
         self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
         self.horizontalSlider.setMaximumSize(QtCore.QSize(16777215, 20))
         self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
         self.horizontalSlider.setObjectName("horizontalSlider")
         self.horizontalLayout.addWidget(self.horizontalSlider)
+
+        self.label2 = QtWidgets.QLabel(self.centralwidget)
+        self.label2.setText("Slider 2:")
+        self.horizontalLayout.addWidget(self.label2)
+
+
         self.horizontalSlider_2 = QtWidgets.QSlider(self.centralwidget)
         self.horizontalSlider_2.setMaximumSize(QtCore.QSize(16777215, 20))
         self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
