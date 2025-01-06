@@ -33,7 +33,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.plot()
 
     def plot(self):
-        data = [1, 2, 3, 4, 5]
+        data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         ax = self.figure.add_subplot(111)
         ax.plot(data, '*-')
         self.canvas.draw()
@@ -86,6 +86,13 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.horizontalSlider_2.setObjectName("horizontalSlider_2")
         self.horizontalLayout.addWidget(self.horizontalSlider_2)
         self.verticalLayout.addLayout(self.horizontalLayout)
+
+        self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
+        self.groupBox.setTitle("Group Box")
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.groupBox)
+        self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+        self.verticalLayout.addWidget(self.groupBox)
+
         self.verticalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
