@@ -10,13 +10,33 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import sys
-
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.pyplot as plt
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
         uic.loadUi('interface.ui', self)
+        self.setupMatplotlib()
+    
+    def setupMatplotlib(self):
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+
+        layout = QtWidgets.QVBoxLayout(self.matplotlibWidget)
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+
+        self.plot()
+
+    def plot(self):
+        data = [1, 2, 3, 4, 5]
+        ax = self.figure.add_subplot(111)
+        ax.plot(data, '*-')
+        self.canvas.draw()
     
     def setupUi(self, MainWindow): 
 

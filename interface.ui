@@ -46,6 +46,11 @@
         <property name="frameShadow">
          <enum>QFrame::Raised</enum>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+            <widget class="QWidget" name="matplotlibWidget" />
+        </item>
+        </layout>
        </widget>
       </item>
       <item>
