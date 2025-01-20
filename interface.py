@@ -12,7 +12,26 @@ from PyQt5 import QtCore, QtGui, QtWidgets, uic
 import sys
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from PyQt5.QtWidgets import QAction
+import numpy as np
 import matplotlib.pyplot as plt
+
+class CustomNavigationToolbar(NavigationToolbar):
+    def __init__(self, canvas, parent, coordinates=True):
+        NavigationToolbar.__init__(self, canvas, parent, coordinates)
+        self.save_text_action = QAction('Save as Text', self)
+        self.save_text_action.triggered.connect(self.save_plot_as_text)
+        self.addAction(self.save_text_action)
+
+    def save_plot_as_text(self):
+        fig = self.canvas.figure
+        for ax in fig.axes:
+            for line in ax.lines:
+                x_data = line.get_xdata()
+                y_data = line.get_ydata()
+                np.savetxt(f'{line.get_label()}.txt', np.column_stack((x_data, y_data)), delimiter=',', header='X,Y', comments='')
+        print("Plot data saved as text files.")
+
 
 class Ui_MainWindow(QtWidgets.QMainWindow):
     
@@ -24,7 +43,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def setupMatplotlib(self):
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        #self.toolbar = NavigationToolbar(self.canvas, self)
+        self.toolbar = CustomNavigationToolbar(self.canvas, self)
 
         layout = QtWidgets.QVBoxLayout(self.matplotlibWidget)
         layout.addWidget(self.toolbar)
