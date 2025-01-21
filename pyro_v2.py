@@ -400,7 +400,7 @@ class Pyro(QtWidgets.QMainWindow):
         print("calibMain")
         
         self.returnedpower, self.returnedlum = app.calibration(
-            self.N7745C, self.temperatureListK, self.temperatureListK[self.index], 
+            self.N7745C, self.Delay_R_Buf, self.temperatureListK, self.temperatureListK[self.index], 
             self.returnedpower, self.returnedlum, self.wavelengths)
        
         self.calibration_data = self.openJson("calibration_data")

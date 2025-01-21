@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="Calibration">
      <property name="autoFillBackground">
@@ -1506,7 +1506,7 @@ color: rgb(255,255,255)</string>
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
-         <widget class="QLineEdit" name="nbre_pts">
+         <widget class="QLineEdit" name="nbre_pts_1">
           <property name="geometry">
            <rect>
             <x>260</x>
