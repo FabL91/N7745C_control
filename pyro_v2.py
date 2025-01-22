@@ -397,6 +397,18 @@ class Pyro(QtWidgets.QMainWindow):
 
 
     def calibMain(self):
+        """
+        This function performs the main calibration process. It measures the power and luminance at different temperatures,
+        stores the results, and fits the data to a model.
+
+        Steps:
+        1. Measure power and luminance at the current temperature.
+        2. Store the measured values in the calibration data.
+        3. Update the GUI with the measured values.
+        4. If there are more temperatures to measure, prompt the user to proceed to the next temperature.
+        5. If all temperatures have been measured, fit the data to a model and update the GUI.
+        6. Save the calibration results and close the connection to the instrument.
+        """
         print("calibMain")
         
         self.returnedpower, self.returnedlum = app.calibration(
@@ -405,7 +417,7 @@ class Pyro(QtWidgets.QMainWindow):
        
         self.calibration_data = self.openJson("calibration_data")
         
-        self.calibration_data["power_calib"] = self.returnedpower#Writing the power and luminance values in their files
+        self.calibration_data["power_calib"] = self.returnedpower  # Writing the power and luminance values in their files
         self.calibration_data["lum_calib"] = self.returnedlum
         self.saveJson(self.calibration_data, "calibration_data")
         self.ui.valPow.setText(str(self.returnedpower))
@@ -414,19 +426,18 @@ class Pyro(QtWidgets.QMainWindow):
         self.index += 1
         
         if self.index < self.n:
-            #Changing the label with the next temperature
+            # Changing the label with the next temperature
             self.ui.textTemperature.setText(f"Press OK when the measurement is ready to be made at {self.temperature[self.index]}[@°C]")
             self.ui.textTemperature.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        elif self.index == self.n: #When we measured all temperatures
-        
-            #Plotting and fitting the data
+        elif self.index == self.n:  # When we measured all temperatures
+            # Plotting and fitting the data
             plot.drawLumPower(self.wavelengths, self.returnedlum, self.returnedpower)
-            try : 
-                self.Alist, self.Blist, self.Clist = plot.nonlinearFit(self.wavelengths, self.returnedlum, self.returnedpower, self.cdir)#Applying a nonlinear regression model
+            try: 
+                self.Alist, self.Blist, self.Clist = plot.nonlinearFit(self.wavelengths, self.returnedlum, self.returnedpower, self.cdir)  # Applying a nonlinear regression model
             except RuntimeError:
                 print("Not able to fit the curve")
                 
-            #Modifying buttons and labels to be able to reset
+            # Modifying buttons and labels to be able to reset
             self.ui.textTemperature.setText("")
             self.ui.startButton.setText("Reset")
             self.ui.startButton.setEnabled(True)
@@ -434,22 +445,22 @@ class Pyro(QtWidgets.QMainWindow):
             self.ui.startButton.setHidden(False)
             self.ui.okButton.setHidden(True)
                     
-            #Writing the power and luminance values in their files
+            # Writing the power and luminance values in their files
             self.calibration_data["A"] = self.Alist
             self.calibration_data["B"] = self.Blist
             self.calibration_data["C"] = self.Clist
-            print("\nAlist",self.Alist)  
-            print("\nBlist",self.Blist)
-            print("\nClist",self.Clist)
+            print("\nAlist", self.Alist)  
+            print("\nBlist", self.Blist)
+            print("\nClist", self.Clist)
             self.saveJson(self.calibration_data, "calibration_data")
             
-            self.N7745C.close() #Closing the link with the instrument
+            self.N7745C.close()  # Closing the link with the instrument
             self.rm.close()
             
-            #Plotting the graph
+            # Plotting the graph
             self.ui.labelgraphUp.setPixmap(QPixmap(self.cdir + "/power_lum_calib_axcb.json"))
             self.ui.labelgraphUp.setScaledContents(True)
-            
+
     
     def resetCalib(self):        
         self.ui.startButton.clicked.connect(self.startCalib)
@@ -972,7 +983,7 @@ class ThreadMeasure(QThread):
     
 
 #Creating a window with the application
-if __name__ == "__main__":
+if __name__ "__main__":
     application = QtWidgets.QApplication(sys.argv)
     window = Pyro() #Creating the GUI
     window.show()
